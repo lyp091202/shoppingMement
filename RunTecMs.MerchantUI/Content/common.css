@@ -1,0 +1,270 @@
+﻿@charset "utf-8";
+*{ font-size: 13px}
+
+body
+{
+    margin: 0;
+    padding: 0;
+}
+
+.begintime, .overtime, .number, .timeDistance
+{
+    /**font-size: 16px;**/
+}
+
+.tableProperties
+{
+    padding: 5px 0 5px 10px;
+}
+
+.space, .overtime, .number, .timeDistance
+{
+    padding-left: 20px;
+}
+.toolbar
+{
+    margin: 20px 0 0 900px;
+}
+.canvasProperties
+{
+    width: 800px;
+    margin-left: 20px;
+}
+.distance
+{
+    height: 200px;
+    margin-top: 10px;
+    width: 100%;
+}
+.row
+{
+    width: 100%;
+    margin: 10px 0;
+}
+.tablerow
+{
+    width: 95%;
+    margin: 20px 0 20px 2%;
+}
+.td_title
+{
+    width: 100px;
+    text-align: right;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+.td_title_ex
+{
+    width: 100px;
+    text-align: left;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+.td_title1
+{
+    width: 200px;
+    text-align: right;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+.td_text
+{
+    width: 200px;
+    text-align: left;
+}
+.row .td_search
+{
+    float: right;
+    margin-right: 20%;
+}
+.row .td_search a, .td_title a
+{
+    width: 100px;
+    height: 25px;
+    letter-spacing: 3px;
+}
+
+/*****图片作为链接*******/
+.navlink
+{
+    width: 100%;
+    height: 90%;
+}
+.navlink ul
+{
+    list-style: none;
+    overflow: hidden;
+    padding-left: 5%;
+}
+.navlink ul li
+{
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    position: relative;
+    list-style-type: none;
+    margin-top: 100px;
+}
+.navlink ul a
+{
+    width: 70px;
+    height: 70px;
+    display: inline-block;
+    background: url('../Images/boultimg.png') no-repeat;
+    background-size: 180px;
+}
+.navlink ul .nav-allopation a
+{
+    background-position: 0 0;
+}
+
+.navlink ul .nav-allopation a:active, .navlink ul .nav-allopation a:hover
+{
+    background-position: -68px 0;
+}
+
+.navlink ul .nav-remove a
+{
+    background-position: 0 -100px;
+}
+
+.navlink ul .nav-remove a:active, .navlink ul .nav-remove a:hover
+{
+    background-position: -70px -97px;
+}
+
+#deldialog label, .dialogform label
+{
+    float: left;
+    padding: 10px 0 10px 10%;
+    width: 90%;
+}
+
+#ChangeShip fieldset
+{
+    margin: 5px;
+    width: 45%;
+    height: 100;
+    border: 1px solid #ccc;
+}
+
+.td-field
+{
+    padding: 5px 3px;
+    border: 1px solid #ccc;
+}
+
+.tree-comdelemp
+{
+    width: 200px;
+    height: 70%;
+    padding: 20px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.buttonCss
+{
+    width: 77px;
+    height: 25px;
+    margin: auto auto auto auto;
+}
+.search-title
+{
+    float: inherit;
+    margin: 0 auto;
+    width: auto;
+    height: 110px;
+}
+
+.search-title .leftform
+{
+    float: left;
+    width: 44%;
+    height: 100%;
+}
+
+.search-title .rightform
+{
+    float: left;
+    padding-left: 7%;
+    width: 48%;
+    height: 100%;
+}
+
+.combotree-style
+{
+    height: 95%;
+    overflow: auto;
+    padding-bottom: 10px;
+}
+
+.roleicon
+{
+    background: url(../Scripts/easyui-1.4.5/themes/icons/pencil.png) no-repeat center center;
+    width: 15px;
+    height: 15px;
+    float: left;
+    margin: 1px -20px 0 15px;
+}
+table .block
+{
+    display: block;
+    width: 100px;
+    height: 20px;
+}
+
+.ViewDetailsTable
+{
+     width:100%;
+     border-collapse:collapse;
+}
+
+.ViewDetailsTable td
+{
+    border:1px solid #95B8E7;
+}
+.ViewDetailsTable tr td:first-child
+{
+    width: 25%; 
+}
+
+.td_titleDetail
+{
+    width: 100px;
+    text-align: right;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+.td_textDetail
+{
+    width: 100px;
+    text-align: left;
+}
+
+
+.td_searchDetail 
+{
+    float: right;
+    margin-right: 15%;
+}
+.td_searchDetail a {
+    width: 80px;
+    height: 25px;
+    letter-spacing: 3px;
+}
+
+
+.td_searchIncome
+{
+    float: right;
+    margin-right: 25%;
+}
+.td_searchIncome a
+{
+    width: 100px;
+    height: 25px;
+    letter-spacing: 3px;
+}
+
+

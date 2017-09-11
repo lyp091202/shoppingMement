@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Expires" CONTENT="0"> 
+    <meta http-equiv="Cache-Control" CONTENT="no-cache"> 
+    <meta http-equiv="Pragma" CONTENT="no-cache"> 
+    <meta name="viewport" content="width=device-width"/>
+    <title></title>
+    @Styles.Render("~/Scripts/easyui-1.4.5/themes/icon.css")
+    @Styles.Render("~/Scripts/easyui-1.4.5/themes/default/easyui.css")
+    @Styles.Render("~/Content/common.css")
+    @Scripts.Render("~/Scripts/jquery-1.11.3.min.js")
+    @Scripts.Render("~/Scripts/easyui-1.4.5/jquery.easyui.min.js")
+    @Scripts.Render("~/Scripts/easyui-1.4.5/locale/easyui-lang-zh_CN.js")
+    @Scripts.Render("~/Scripts/common.js")
+    @Scripts.Render("~/Scripts/validatebox.js")
+    @Scripts.Render("~/Scripts/core/jquery.extend.js")
+    @Scripts.Render("~/Scripts/jquery.cookie.js")
+   @* @Scripts.Render("~/Scripts/siteData.min.js")*@
+</head>
+<body>
+    @RenderBody()
+</body>
+@RenderSection("scripts", required: false)
+</html>

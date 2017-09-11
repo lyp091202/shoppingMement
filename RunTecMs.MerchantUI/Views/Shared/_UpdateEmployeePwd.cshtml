@@ -1,0 +1,25 @@
+﻿@Styles.Render("~/Scripts/easyui-1.4.5/themes/icon.css")
+@Styles.Render("~/Scripts/easyui-1.4.5/themes/default/easyui.css")
+@Styles.Render("~/Content/common.css")
+@Styles.Render("~/Content/home.css")
+<form id="form-updatepwd" action="">
+<span class="change-pwdspan">旧密码：</span>
+<input class="easyui-textbox" id="oldpwd" name="oldpwd" maxlength="12" type="password"
+    data-options="missingMessage:'请输入旧密码',required:true,validType:'testoldPwd'" /><br />
+<span class="change-pwdspan">新密码：</span>
+<input class="easyui-textbox" id="newpwd" name="newpwd" maxlength="12" type="password"
+    data-options="missingMessage:'请输入新密码',required:true,validType:'safePassword'" /><br />
+<span class="change-pwdspan">确认密码：</span>
+<input class="easyui-textbox" id="confirmpwd" maxlength="12" type="password" data-options="missingMessage:'请确认新密码',required:true,validType:['safePassword','equalTo[newpwd]']" />
+<div data-options="region:'south',border:false, height:100" class="region-south">
+    <a class="easyui-linkbutton" id="w-updateok" data-options="iconCls:'icon-ok'" href="javascript:void(0)">
+        确定</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+            onclick="parent.$('#updatePwd').dialog('close')">取消</a>
+</div>
+</form>
+@Scripts.Render("~/Scripts/jquery-1.11.3.min.js")
+@Scripts.Render("~/Scripts/easyui-1.4.5/jquery.easyui.min.js")
+@Scripts.Render("~/Scripts/easyui-1.4.5/locale/easyui-lang-zh_CN.js")
+@Scripts.Render("~/Scripts/common.js")
+@Scripts.Render("~/Scripts/home.js")
+@Scripts.Render("~/Scripts/validatebox.js")

@@ -1,0 +1,122 @@
+﻿@{
+    Layout = null;
+}
+@model RunTecMs.Model.ORG.Login
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>系统登录</title>
+    @Styles.Render("~/Content/custlogin.css")
+</head>
+<body>
+    <div class="frontHome page" id="loginbox">
+        <div class="wrap-container">
+            <div id="home_container" class="clearfix">
+                <div id="home_main">
+                    <div class="inner-main">
+                        <div class="login_box">
+                            <div class="form-title">
+                                <h3>管理后台</h3>
+                            </div>
+                            <form id="fromlogin" class="well form-horizontal" action="" style="background: #FFF">
+                            <div class="logininput">
+                                <fieldset>
+                                    <div id="error" class="alert alert-block alert-error">
+                                        <ul>
+                                            <li></li>
+                                        </ul>
+                                    </div>
+                                    <div id="div_id_username" class="clearfix control-group">
+                                        <label for="id_username" class="control-label requiredField">
+                                            帐号<span class="asteriskField">*</span>
+                                        </label>
+                                        <div class="controls">
+                                            <input class="textinput textInput" id="id_UserName" maxlength="20" name="UserName"
+                                                placeholder="用户名/手机号" type="text" />
+                                        </div>
+                                    </div>
+                                    <div id="div_id_password" class="clearfix control-group">
+                                        <label for="id_password" class="control-label requiredField">
+                                            密码<span class="asteriskField">*</span>
+                                        </label>
+                                        <div class="controls">
+                                            <input class="textinput textInput" id="id_password" maxlength="20" name="Pwd" placeholder="密码"
+                                                type="password" />
+                                        </div>
+                                    </div>
+                                    <div id="div_id_validCode" class="clearfix control-group">
+                                        <label for="id_validCode" class="control-label requiredField">
+                                            验证码<span class="asteriskField">*</span>
+                                        </label>
+                                        <div class="controls">
+                                            <input class="textinput textInput" id="id_validCode" maxlength="4" name="ValidCode"
+                                                placeholder="验证码" type="text" />
+                                        </div>
+                                        <span><a href="javascript:void(0);" class="code">
+                                            <img id="imgcode" src="/Account/ValidCode/" width="74" height="25" title="看不清，换一个"
+                                                alt="" />
+                                        </a></span>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <fieldset class="form-actions" style="position: relative; margin-top: 15px;">
+                                <div class="loginFormBtn clearfix">
+                                    <button class="login_btn js_login_btn" id="userLogin" type="button" style="width: 100%;">
+                                        登录</button>
+                                </div>
+                            </fieldset>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="container" class="mpage">
+        <div id="anitOut" class="anitOut">
+        </div>
+    </div>
+    @Scripts.Render("~/Scripts/jquery-1.11.3.min.js")
+    @Scripts.Render("~/Scripts/cav.js")
+    @Scripts.Render("~/Scripts/manager.js")
+    @Scripts.Render("~/Scripts/login.js")
+    <script type="text/javascript">
+        $(function() {
+            var mttop=($(window).height()-$('.frontHome.page').height()-20)/2;
+            if(mttop<0) { mttop=0 }
+            // $('.frontHome.page').css('marginTop', mttop);
+            //登录框效果
+            $('#id_username')
+            .focus(function() {
+                $(this).parent('.controls').addClass('focus');
+            })
+            .blur(function() { $(this).parent('.controls').removeClass('focus') });
+            $('#id_password')
+            .focus(function() {
+                $(this).parent('.controls').addClass('focus');
+            })
+            .blur(function() { $(this).parent('.controls').removeClass('focus') });
+            $('#id_validCode')
+            .focus(function() {
+                $(this).parent('.controls').addClass('focus');
+            })
+            .blur(function() { $(this).parent('.controls').removeClass('focus') });
+        });
+        if(!window.localStorage) {//alert("低版本浏览器");
+            $("#noie-content").show();
+            $("#loginbox").hide();
+        }
+        else {//alert("高级浏览器");
+            $("#noie-content").hide();
+        }
+        $(function() {
+            $(".no-upie")
+            .click(function() {
+                $("#noie-content").hide();
+                $("#loginbox").show();
+            });
+        });
+    </script>
+</body>
+</html>

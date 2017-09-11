@@ -1,0 +1,62 @@
+
+*
+{
+    padding: 0px;
+    margin-top: 0px;
+    margin-right: auto;
+    margin-bottom: 0px;
+    margin-left: auto;
+}
+
+.outer
+{
+    width: 100%;
+    height: 100%; /* [disabled]clear:both; */
+    background-color: #1f7dff;
+    padding-top: 5.9%;
+}
+.outer .login
+{
+    background-image: url(../Images/Login/lb.png);
+    background-repeat: no-repeat;
+    height: 600px;
+    width: 1016px;
+    text-align: center;
+    padding-top: 266px;
+}
+.outer .login .k
+{
+    height: 173px;
+    width: 280px;
+    margin-left: 610px;
+    margin-top: -30px;
+}
+.outer .login .k p
+{
+    font-family: "Î¢ÈíÑÅºÚ";
+    color: #083f8e;
+    font-size: 14px;
+    line-height: 25px;
+    float: left;
+}
+.outer .login .k input
+{
+    height: 25px;
+    margin-bottom: 15px;
+    width: 195px;
+    text-align: center;
+    font-size: 14px;
+    outline: none;
+}
+.outer .login .k .code
+{
+    margin-left: 0px;
+}
+
+.outer .login .k .btn
+{
+    margin-top: 60px;
+    margin-left: -160px;
+    float: left;
+    position: absolute;
+}

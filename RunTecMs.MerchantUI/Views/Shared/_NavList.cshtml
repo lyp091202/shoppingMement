@@ -1,0 +1,12 @@
+﻿@model IList<RunTecMs.Model.SYS.Module>
+@{
+    if (Model != null && Model.Count > 0)
+    {
+        foreach (var item in Model)
+        {
+            <div title="@item.Name" data-options="fit:true,border:false" style="overflow: hidden;"
+                 id="@item.ModuleID">
+            </div>
+        }
+    }
+}

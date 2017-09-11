@@ -1,0 +1,63 @@
+﻿@Scripts.Render("~/Scripts/UIJS/WorkHub.js")
+
+@Scripts.Render("~/Scripts/Chart")
+@model RunTecMs.Model.ORG.LoginEmployee
+<style type="text/css">
+    .EmpInfo {
+        float: left;
+        margin-left: 5%;
+    }
+
+        .divInfo table {
+            border-collapse: collapse;
+        }
+
+        .divInfo table tr td:nth-child(2n+1) {
+            text-align: right;
+            font-style: inherit;
+            color: Navy;
+            padding-bottom: 5px;
+            padding-top: 5px;
+            padding-left: 5px;
+        }
+
+        .divInfo table tr td:nth-child(2n) {
+            text-align: left;
+            font-style: inherit;
+            color: Navy;
+            padding-bottom: 5px;
+            padding-top: 5px;
+            padding-left: 5px;
+        }
+</style>
+<div id="cc" style="height: 22%; width: 98%">
+    <div id="left"  style="float: left; width: 48%;height:90%;overflow: hidden;">
+        <div id="BacklogInfo" title="待办事项" style="height:100%" class="easyui-panel">
+
+        </div>
+    </div>
+    <div id="right" style="margin-left: 50%; height:90%; width:48%">
+        <div id="MessageInfo" title="通知消息" style="height:100%" class="easyui-panel">
+            <table id="MessageGridList" class="easyui-datagrid"></table>
+        </div>
+    </div>
+
+    <div style="clear: both;" title="该标签用于清除浮动，使left和right的父标签能自适应高度！">
+    </div>
+</div>
+<div id="customerPanel" class="easyui-panel" title="销售报表" style="height: 77%">
+    <form id="WorkHubForm" method="post" class="tableProperties" style="margin-left: 5%">
+
+        <input type="hidden" id="CompId" name="CompId" />
+        <input type="hidden" id="depID" name="depID" />
+        <input type="hidden" id="empId" name="empId" />
+    </form>
+    <div class="easyui-layout" style="height: 80%" border="false">
+        <div region="center" border="false" id="result">
+            <div id="container" style="min-width: 50%; max-width: 80%; min-height: 75%; max-height: 100%; float:left">
+            </div>
+            <div id="statisticscontainer" style="min-width: 50%; max-width: 80%; min-height: 75%; max-height: 100%;float:left">
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,56 @@
+﻿<div id="lectDialog">
+    <div class="easyui-panel"  data-options="fit:true,border:false" style="width: 100%" title="查询">
+        <form method="post" class="tableProperties" action="" id="rdpForm">
+            <table class="row">
+                <tr>
+                    <td class="td_title">
+                        讲师姓名：
+                    </td>
+                    <td class="td_text">
+                        <label id="lblRdpLectureName">
+                        </label>
+                        <input type="hidden" id="hidRdpLectureName" name="hidRdpLectureName"/>
+                    </td>
+                    <td class="td_title">
+                        时间：
+                        
+                    </td>
+                    <td class="td_text">
+                        <label id="lblRdpTime">
+                        </label>
+                        <input type="hidden" id="hidRdpStartTime" name="hidRdpStartTime"/>
+                        <input type="hidden" id="hidRdpEndTime" name="hidRdpEndTime"/>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="td_title">
+                        收入来源：
+                    </td>
+                    <td class="">
+                        <select id="rdpOrigin" name="rdpOrigin" data-options="editable:false,width:100">
+                        </select>
+                    </td>
+                    <td class="td_title" id="lblPaymentStatus">
+                        结算状态：
+                    </td>
+                    <td class="td_text" id="selectPaymentStatus">
+                        <select id="rdpLectureStatus" name="rdpLectureStatus" data-options="editable:false,width:100">
+                        </select>
+                    </td>
+                    <td></td>
+                    <td colspan="2">
+                        <a href="javascript:void(0)" id="rdpSearch" class="easyui-linkbutton" data-options="iconCls:'icon-search'">
+                            查询</a> &nbsp;&nbsp;&nbsp;
+                    </td>
+                </tr>
+            </table>
+        </form>
+            <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center'" style="padding-bottom: 110px; border-left: none;border-right: none">
+            <table id="dgRdp" title="收入明细" style="height: 90%" data-options="border:false">
+            </table>
+        </div>
+    </div>
+    </div>
+</div>
