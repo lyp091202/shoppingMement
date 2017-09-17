@@ -27,27 +27,17 @@ namespace RunTecMs.RunDAL.Organizations
         {
             StringBuilder sb = new StringBuilder();
             List<SqlParameter> paraList = new List<SqlParameter>();
-            sb.AppendLine("SELECT TOP 1  OE.*,"); 
-            // 归属信息
-            sb.AppendLine("       EDR.CompanyID, EDR.DepID, EDR.RoleID AS MaxRoleID,");
-            // 角色信息
-            sb.AppendLine("       Role.Name AS RoleName, Role.AuthorityRole,");
-            // 部门信息
-            sb.AppendLine("       dep.Name AS DepName,");
-            sb.AppendLine("       CASE WHEN EDR.RoleID <= 4 THEN 1 ELSE 0 END AS IsManager ");
-            sb.AppendLine("  FROM Org_Employee OE, Org_EmployeeDepartmentRole EDR  ");
-            sb.AppendLine(" LEFT JOIN Org_Role Role ON Role.RoleID = EDR.RoleID");
-            sb.AppendLine(" LEFT JOIN Org_Department dep ON dep.DepID = EDR.DepID");
-            sb.AppendLine(" WHERE EDR.EmployeeID = OE.EmployeeID ");
-            sb.AppendLine("   AND OE.LoginName = @LoginName");
+            sb.AppendLine("SELECT TOP 1 VEB.*,"); 
+            sb.AppendLine("  FROM V_EmployeeBelongInfo VEB  ");
+            sb.AppendLine(" WHERE VEB.LoginName = @LoginName ");
             paraList.Add(new SqlParameter("@LoginName", loginName));
             if (!string.IsNullOrEmpty(pwd))
             {
-                sb.AppendLine("   AND OE.Password = @Password");
+                sb.AppendLine("   AND VEB.Password = @Password");
                 paraList.Add(new SqlParameter("@Password", pwd));
             }
 
-            sb.AppendLine(" ORDER BY EDR.RoleID");
+            sb.AppendLine(" ORDER BY VEB.RoleID");
 
             DataTable dt = DbHelperSQL.Query(sb.ToString(), paraList.ToArray()).Tables[0];
 
@@ -69,7 +59,7 @@ namespace RunTecMs.RunDAL.Organizations
         public Model.ORG.EmployeeModel GetEmployeeByEmployeeID(int EmployeeID)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("select * from Org_Employee");
+            sb.AppendLine("select * from V_EmployeeBelongInfo");
             sb.AppendLine("where EmployeeID=@EmployeeID");
 
             SqlParameter[] para = new SqlParameter[]{
