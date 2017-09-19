@@ -19,6 +19,8 @@ namespace RunTecMs.Model.Parameter
             public DateTime StartTime;
             public DateTime EndTime;
             public int CompanyID;
+            public int page;
+            public int rows;
         }
 
         /// <summary>
@@ -38,6 +40,8 @@ namespace RunTecMs.Model.Parameter
             /// 所属公司ID
             /// </summary>
             public int CompanyID;
+            public int page;
+            public int rows;
         }
 
         /// <summary>

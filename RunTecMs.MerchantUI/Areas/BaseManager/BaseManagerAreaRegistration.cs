@@ -1,22 +1,22 @@
 ﻿using System.Web.Mvc;
 
-namespace RunTecMs.MerchantUI.Areas.AccountManager
+namespace RunTecMs.MerchantUI.Areas.BaseManager
 {
-   public class AccountManagerAreaRegistration : AreaRegistration
+   public class BaseManagerAreaRegistration : AreaRegistration
    {
       public override string AreaName
       {
          get
          {
-            return "AccountManager";
+            return "BaseManager";
          }
       }
 
       public override void RegisterArea(AreaRegistrationContext context)
       {
          context.MapRoute(
-             "AccountManager_default",
-             "AccountManager/{controller}/{action}/{id}",
+             "BaseManager_default",
+             "BaseManager/{controller}/{action}/{id}",
              new { action = "Index", id = UrlParameter.Optional }
          );
       }

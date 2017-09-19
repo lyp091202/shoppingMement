@@ -90,7 +90,7 @@ namespace RunTecMs.RunDALFactory
                 obj = Assembly.Load(Getpath()).CreateInstance(classNamespace);
                 CacheHelper.SetCache(classNamespace, obj);
             }
-            catch
+            catch(Exception e)
             {
                 // ignored
             }

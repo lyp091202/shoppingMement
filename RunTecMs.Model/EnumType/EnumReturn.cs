@@ -53,4 +53,28 @@
         /// </summary>
         Succeed = 1
     }
+
+    public enum TestType
+    {
+        /// <summary>
+        /// 成功（正确）
+        /// </summary>
+        success = 000,
+
+        /// <summary>
+        /// 文本框为空
+        /// </summary>
+        Empty = 001,
+
+        /// <summary>
+        /// 已存在
+        /// </summary>
+        Existence = 002,
+
+        /// <summary>
+        /// 未修改
+        /// </summary>
+        Undisposed = 003,
+
+    }
 }

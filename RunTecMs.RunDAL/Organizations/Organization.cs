@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using RunTecMs.Common;
+using RunTecMs.Model.Common;
 using RunTecMs.Common.ConvertUtility;
 using RunTecMs.Common.DBUtility;
 using RunTecMs.RunIDAL.Organizations;
@@ -20,6 +21,90 @@ namespace RunTecMs.RunDAL.Organizations
         IList<Model.ORG.DepTreeInfo> treeList = new List<Model.ORG.DepTreeInfo>();
 
         #region  组织结构操作
+        /// <summary>
+        /// 根据登录用户获取权限公司-部门树形信息
+        /// </summary>
+        /// <param name="EmployeeID"></param>
+        /// <returns></returns>
+        public IList<Model.ORG.DepTreeInfo> GetDepTree(int EmployeeID)
+        {
+            // 根据员工取得所属部门及角色
+            RunTecMs.RunDAL.Organizations.Employee employeeInfo = new RunTecMs.RunDAL.Organizations.Employee();
+            IList<Model.ORG.EmployeeDepartmentRole> employeeDepRoleList = employeeInfo.GetEmployeeDepartmentID(false, 0, 0, EmployeeID);
+            if (employeeDepRoleList == null)
+            {
+                return null;
+            }
+
+            // 取得登录用户最大权限
+            int maxUserRoleID = employeeDepRoleList[0].RoleID;
+
+            // 定义变量
+            IList<Model.ORG.DepTreeInfo> depTreeList = new List<Model.ORG.DepTreeInfo>();
+            IList<Model.ORG.DepTreeInfo> showDepTree = new List<Model.ORG.DepTreeInfo>();
+            IList<string> depList = new List<string>();
+
+            // 循环取得的部门及角色信息
+            for (int i = 0; i < employeeDepRoleList.Count; i++)
+            {
+                // 公司
+                int companyId = employeeDepRoleList[i].CompanyID;
+                // 部门
+                int depId = employeeDepRoleList[i].DepID;
+                // 角色
+                int roleId = employeeDepRoleList[i].RoleID;
+                // 业务值
+                int BusinessValue = employeeDepRoleList[i].BusinessValue;
+
+                int companyIdTemp = 0;
+                int depIdTemp = 0;
+                // 根据公司和部门取得树形结构
+                if ((maxUserRoleID >= Convert.ToInt32(RoleValue.超级管理员) && maxUserRoleID <= Convert.ToInt32(RoleValue.总经理)))
+                {
+                    depTreeList = GetDepartmentInfo(companyId);
+                }
+                else
+                {
+                    depTreeList = GetDepartmentInfo(companyId, depId);
+                }
+                if (depTreeList == null)
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < depTreeList.Count; j++)
+                {
+                    string strCompanyDep = Convert.ToString(depTreeList[j].CompanyID) + "," + Convert.ToString(depTreeList[j].DepID);
+
+                    //
+                    if (depTreeList[j].CompanyID == companyIdTemp && depTreeList[j].DepID == depIdTemp)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        // 判断是否已经存在公司信息
+                        if (!depList.Contains(strCompanyDep))
+                        {
+                            showDepTree.Add(depTreeList[j]);
+                            depList.Add(Convert.ToString(strCompanyDep));
+                        }
+                    }
+
+                    // 变量设定
+                    if (depTreeList[j].CompanyID != companyIdTemp)
+                    {
+                        companyIdTemp = depTreeList[j].CompanyID;
+                    }
+                    if (depTreeList[j].DepID != depIdTemp)
+                    {
+                        depIdTemp = depTreeList[j].DepID;
+                    }
+                }
+            }
+            return showDepTree;
+        }
+
         /// <summary>
         ///  获取公司-部门树形信息
         /// </summary>
@@ -127,55 +212,223 @@ namespace RunTecMs.RunDAL.Organizations
         }
 
         /// <summary>
-        ///  获取公司部门信息
-        ///  不指定公司 and 不指定部门场合：查询所有公司及直属部门
-        ///    指定公司 and 不指定部门场合：查询指定公司的直属部门
-        ///    指定公司 and 指定部门场合：查询指定公司的指定部门信息
+        /// 根据用户ID获取公司-部门-员工树形信息
         /// </summary>
-        /// <param name="companyID">公司ID(可以为空)</param>
-        /// <param name="depID">部门ID(可以为空)</param>
-        /// <returns>部门信息</returns>
-        private IList<Model.ORG.CompanyDepInfo> GetCompanyDepInfo(int companyID = 0, int depID = 0)
+        /// <param name="EmployeeID"></param>
+        /// <param name="BusinessValue"></param>
+        /// <param name="maxUserRoleID"></param>
+        /// <returns></returns>
+        public IList<Model.ORG.EmployeeTreeInfo> GetEmployeeTreeByEmployee(int EmployeeID, int BusinessValue, int maxUserRoleID)
         {
-            DataTable dt = new DataTable();
-            StringBuilder strBSql = new StringBuilder();
-            List<SqlParameter> paraList = new List<SqlParameter>();
+            // 公司-部门-员工树形信息
+            IList<Model.ORG.EmployeeTreeInfo> showEmployeeTree = new List<Model.ORG.EmployeeTreeInfo>();
+            Model.ORG.EmployeeTreeInfo employeeTreeInfo = new Model.ORG.EmployeeTreeInfo();
+            // 员工所属(公司-部门-员工)
+            IList<string> employeeTreeIDList = new List<string>();
 
-            strBSql.AppendLine("SELECT Company.CompanyID, Company.CompanyCode, Company.Name as CompanyName, Department.DepID, Department.Name DepName ");
-            strBSql.AppendLine("  FROM Org_Company Company, Org_Department Department ");
-            strBSql.AppendLine(" WHERE Company.CompanyId = Department.CompanyId ");
-            strBSql.AppendLine("   AND ISNULL(Company.IsDel, 0) = 0 ");
-            strBSql.AppendLine("   AND ISNULL(Department.IsDel, 0) = 0 ");
+            // 变量定义
+            RunTecMs.RunDAL.Organizations.Employee employeeInfo = new RunTecMs.RunDAL.Organizations.Employee();
+            IList<Model.ORG.EmployeeDepartmentRole> employeeDepRoleList = new List<Model.ORG.EmployeeDepartmentRole>();
+            IList<Model.ORG.EmployeeDepartmentRole> employeeDepRoleDetailList = new List<Model.ORG.EmployeeDepartmentRole>();
+            IList<Model.ORG.EmployeeDepartmentRole> employeeRoleList = new List<Model.ORG.EmployeeDepartmentRole>();
+            Model.ORG.EmployeeDepartmentRole departRolePara = new Model.ORG.EmployeeDepartmentRole();
 
-            if (depID == 0)
+            // 取得公司-部门树形
+            IList<Model.ORG.DepTreeInfo> depTreeList = GetDepTreeByEmployee(EmployeeID);
+
+            // 取得登录用户情报
+            if (maxUserRoleID == 0)
             {
-                // 不指定部门场合，查询顶级部门
-                strBSql.AppendLine("AND Department.ParentDepID = 0 ");
+                employeeDepRoleList = employeeInfo.GetEmployeeDepartmentID(false, 0, 0, EmployeeID, BusinessValue);
+                if (employeeDepRoleList != null)
+                {
+                    maxUserRoleID = employeeDepRoleList[0].RoleID;
+                }
+                else
+                {
+                    return showEmployeeTree;
+                }
+            }
+
+            // 根据树形去匹配员工信息匹配上的追加到相应节点上
+            // 总经理以上权限，可以查看本公司所有员工权限
+            if ((maxUserRoleID >= Convert.ToInt32(RoleValue.超级管理员) && maxUserRoleID <= Convert.ToInt32(RoleValue.总经理)))
+            {
+                // 根据树形去匹配员工信息匹配上的追加到相应节点上
+                for (int i = 0; i < depTreeList.Count; i++)
+                {
+                    // 公司/部门树形追加
+                    // 20170421 
+                    employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], depTreeList[i].ID, depTreeList[i].PreID, 0, 0, "", "");
+                    if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
+                    {
+                        showEmployeeTree.Add(employeeTreeInfo);
+                        employeeTreeIDList.Add(employeeTreeInfo.ID);
+                    }
+
+                    //公司/部门精准匹配检索
+                    employeeDepRoleDetailList = employeeInfo.GetEmployeeDepartmentID(true, depTreeList[i].CompanyID, depTreeList[i].DepID);
+                    if (employeeDepRoleDetailList == null)
+                    {
+                        continue;
+                    }
+
+                    // 属于当前公司/部门员工设定
+                    for (int j = 0; j < employeeDepRoleDetailList.Count; j++)
+                    {
+                        // 自定义ID
+                        string ID = depTreeList[i].ID + "_" + employeeDepRoleDetailList[j].EmployeeID;
+                        // 自定义亲ID
+                        string PreID = depTreeList[i].ID;
+
+                        // 员工信息
+                        int employeeIDTemp = employeeDepRoleDetailList[j].EmployeeID;
+                        string employeeLoginName = employeeDepRoleDetailList[j].LoginName;
+                        string employeeTrueName = employeeDepRoleDetailList[j].TrueName;
+
+                        employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], ID, PreID, employeeIDTemp, maxUserRoleID, employeeLoginName, employeeTrueName);
+                        if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
+                        {
+                            showEmployeeTree.Add(employeeTreeInfo);
+                            employeeTreeIDList.Add(employeeTreeInfo.ID);
+                        }
+                    }
+                }
             }
             else
             {
-                // 指定部门场合
-                strBSql.AppendLine("AND Department.DepID = @DepID ");
-                paraList.Add(new SqlParameter("@DepID", depID));
+                int userRoleID = 0;
+                string perID = "";
+
+                // 根据树形去匹配员工信息匹配上的追加到相应节点上
+                for (int i = 0; i < depTreeList.Count; i++)
+                {
+                    bool IsSubDep = false;
+                    bool existFlg = false;
+
+                    // 取得树形中公司和部门
+                    int compantID = depTreeList[i].CompanyID;
+                    int depID = depTreeList[i].DepID;
+
+                    string PreIDTemp = depTreeList[i].PreID;
+
+                    // 公司/部门树形追加
+                    employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], depTreeList[i].ID, PreIDTemp, 0, 0, "", "");
+                    if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
+                    {
+                        showEmployeeTree.Add(employeeTreeInfo);
+                        employeeTreeIDList.Add(employeeTreeInfo.ID);
+                    }
+
+                    //公司/部门精准匹配检索
+                    if (BusinessValue == 0)
+                    {
+                        employeeDepRoleDetailList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID);
+                        employeeRoleList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID, EmployeeID);
+                    }
+                    else
+                    {
+                        employeeDepRoleDetailList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID, 0, BusinessValue);
+                        employeeRoleList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID, EmployeeID, BusinessValue);
+                    }
+
+                    if (employeeRoleList != null)
+                    {
+                        // 取得在部门中的角色
+                        userRoleID = employeeRoleList[0].RoleID;
+                        existFlg = true;
+                    }
+                    else
+                    {
+                        string perDepID = "";
+                        // 取得父级部门ID
+                        if (PreIDTemp.Contains("_"))
+                        {
+                            perDepID = PreIDTemp.Substring(PreIDTemp.IndexOf("_") + 1);
+
+                            employeeRoleList = employeeInfo.GetEmployeeDepartmentID(true, compantID, Convert.ToInt32(perDepID), EmployeeID);
+
+                            if (employeeRoleList != null)
+                            {
+                                // 取得在部门中的角色
+                                userRoleID = employeeRoleList[0].RoleID;
+                                existFlg = true;
+                                IsSubDep = true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+
+                    // 当父级部门相同时跳转到下一条
+                    if (perID.Equals(depTreeList[i].PreID) && IsSubDep == false)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        // 父级部门不同时，认为是下级部门
+                        if (existFlg == true)
+                        {
+                            perID = depTreeList[i].PreID;
+                        }
+                        existFlg = true;
+                    }
+
+                    if (userRoleID == Convert.ToInt32(RoleValue.经理) && employeeDepRoleDetailList != null)
+                    {
+
+                        // 属于当前公司/部门员工设定
+                        for (int j = 0; j < employeeDepRoleDetailList.Count; j++)
+                        {
+                            // 自定义ID
+                            string ID = depTreeList[i].ID + "_" + employeeDepRoleDetailList[j].EmployeeID;
+                            // 自定义亲ID
+                            string PreID = depTreeList[i].ID;
+
+                            // 员工信息
+                            int employeeIDTemp = employeeDepRoleDetailList[j].EmployeeID;
+                            string employeeLoginName = employeeDepRoleDetailList[j].LoginName;
+                            string employeeTrueName = employeeDepRoleDetailList[j].TrueName;
+
+                            employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], ID, PreID, employeeIDTemp, userRoleID, employeeLoginName, employeeTrueName);
+                            if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
+                            {
+                                showEmployeeTree.Add(employeeTreeInfo);
+                                employeeTreeIDList.Add(employeeTreeInfo.ID);
+                            }
+                            // 20170421 
+                        }
+                    }
+                    else
+                    {
+                        // 普通员工场合
+                        // 自定义ID
+                        string ID = depTreeList[i].ID + "_" + EmployeeID;
+                        // 自定义亲ID
+                        string PreID = depTreeList[i].ID;
+                        // 根据员工ID取得员工信息
+                        Model.ORG.EmployeeModel employee = employeeInfo.GetEmployeeByEmployeeID(EmployeeID);
+
+                        employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], ID, PreID, EmployeeID, userRoleID, employee.LoginName, employee.TrueName);
+                        if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
+                        {
+                            showEmployeeTree.Add(employeeTreeInfo);
+                            employeeTreeIDList.Add(employeeTreeInfo.ID);
+                        }
+                        // 20170421 
+                    }
+                }
             }
-            // 指定公司
-            if (companyID > 0)
-            {
-                strBSql.AppendLine("AND Company.CompanyID = @CompanyID ");
-                paraList.Add(new SqlParameter("@CompanyID", companyID));
-            }
-            strBSql.AppendLine("ORDER BY CompanyID, DepID ");
 
-            dt = DbHelperSQL.Query(strBSql.ToString(), paraList.ToArray()).Tables[0];
-
-            if (DataTableTools.DataTableIsNull(dt)) return null;
-
-            IList<Model.ORG.CompanyDepInfo> departmentList = ConvertToList.DataTableToList<Model.ORG.CompanyDepInfo>(dt);
-
-            return departmentList;
+            return showEmployeeTree;
         }
-
-
 
         /// <summary>
         ///  获取公司-部门-员工树形信息
@@ -278,6 +531,7 @@ namespace RunTecMs.RunDAL.Organizations
             return returnTreeList;
         }
 
+        #region  私有方法
         /// <summary>
         /// 递归取得父级节点
         /// </summary>
@@ -336,308 +590,53 @@ namespace RunTecMs.RunDAL.Organizations
             return showDepTree;
         }
 
-
         /// <summary>
-        /// 根据用户ID获取登录员工直属公司-部门树形信息
+        ///  查询指定公司部门信息
+        ///  不指定公司 and 不指定部门场合：查询所有公司及直属部门
+        ///    指定公司 and 不指定部门场合：查询指定公司的直属部门
+        ///    指定公司 and 指定部门场合：查询指定公司的指定部门信息
         /// </summary>
-        /// <param name="EmployeeID"></param>
-        /// <returns></returns>
-        public IList<Model.ORG.DepTreeInfo> GetDepTree(int EmployeeID)
+        /// <param name="companyID">公司ID(可以为空)</param>
+        /// <param name="depID">部门ID(可以为空)</param>
+        /// <returns>部门信息</returns>
+        private IList<Model.ORG.CompanyDepInfo> GetCompanyDepInfo(int companyID = 0, int depID = 0)
         {
-            // 根据员工取得所属部门及角色
-            RunTecMs.RunDAL.Organizations.Employee employeeInfo = new RunTecMs.RunDAL.Organizations.Employee();
-            IList<Model.ORG.EmployeeDepartmentRole> employeeDepRoleList = employeeInfo.GetEmployeeDepartmentID(false, 0, 0, EmployeeID);
-            if (employeeDepRoleList == null)
+            DataTable dt = new DataTable();
+            StringBuilder strBSql = new StringBuilder();
+            List<SqlParameter> paraList = new List<SqlParameter>();
+
+            strBSql.AppendLine("SELECT Company.CompanyID, Company.CompanyCode, Company.Name as CompanyName, Department.DepID, Department.Name DepName ");
+            strBSql.AppendLine("  FROM Org_Company Company, Org_Department Department ");
+            strBSql.AppendLine(" WHERE Company.CompanyId = Department.CompanyId ");
+            strBSql.AppendLine("   AND ISNULL(Company.IsDel, 0) = 0 ");
+            strBSql.AppendLine("   AND ISNULL(Department.IsDel, 0) = 0 ");
+
+            if (depID == 0)
             {
-                return null;
-            }
-
-            // 取得登录用户最大权限
-            int maxUserRoleID = employeeDepRoleList[0].RoleID;
-
-            // 定义变量
-            IList<Model.ORG.DepTreeInfo> depTreeList = new List<Model.ORG.DepTreeInfo>();
-            IList<Model.ORG.DepTreeInfo> showDepTree = new List<Model.ORG.DepTreeInfo>();
-            IList<string> depList = new List<string>();
-
-            // 循环取得的部门及角色信息
-            for (int i = 0; i < employeeDepRoleList.Count; i++)
-            {
-                // 公司
-                int companyId = employeeDepRoleList[i].CompanyID;
-                // 部门
-                int depId = employeeDepRoleList[i].DepID;
-                // 角色
-                int roleId = employeeDepRoleList[i].RoleID;
-                // 业务值
-                int BusinessValue = employeeDepRoleList[i].BusinessValue;
-
-                int companyIdTemp = 0;
-                int depIdTemp = 0;
-                // 根据公司和部门取得树形结构
-                if ((maxUserRoleID >= Convert.ToInt32(RoleValue.超级管理员) && maxUserRoleID <= Convert.ToInt32(RoleValue.总经理)))
-                {
-                    depTreeList = GetDepartmentInfo(companyId);
-                }
-                else
-                {
-                    depTreeList = GetDepartmentInfo(companyId, depId);
-                }
-                if (depTreeList == null)
-                {
-                    continue;
-                }
-
-                for (int j = 0; j < depTreeList.Count; j++)
-                {
-                    string strCompanyDep = Convert.ToString(depTreeList[j].CompanyID) + "," + Convert.ToString(depTreeList[j].DepID);
-                    
-                    //
-                    if (depTreeList[j].CompanyID == companyIdTemp && depTreeList[j].DepID == depIdTemp)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        // 判断是否已经存在公司信息
-                        if (!depList.Contains(strCompanyDep))
-                        {
-                            showDepTree.Add(depTreeList[j]);
-                            depList.Add(Convert.ToString(strCompanyDep));
-                        }
-                    }
-
-                    // 变量设定
-                    if (depTreeList[j].CompanyID != companyIdTemp)
-                    {
-                        companyIdTemp = depTreeList[j].CompanyID;
-                    }
-                    if (depTreeList[j].DepID != depIdTemp)
-                    {
-                        depIdTemp = depTreeList[j].DepID;
-                    }
-                }
-            }
-            return showDepTree;
-        }
-
-        /// <summary>
-        /// 根据用户ID获取公司-部门-员工树形信息
-        /// </summary>
-        /// <param name="EmployeeID"></param>
-        /// <param name="BusinessValue"></param>
-        /// <param name="maxUserRoleID"></param>
-        /// <returns></returns>
-        public IList<Model.ORG.EmployeeTreeInfo> GetEmployeeTreeByEmployee(int EmployeeID, int BusinessValue, int maxUserRoleID)
-        {
-            // 公司-部门-员工树形信息
-            IList<Model.ORG.EmployeeTreeInfo> showEmployeeTree = new List<Model.ORG.EmployeeTreeInfo>();
-            Model.ORG.EmployeeTreeInfo employeeTreeInfo = new Model.ORG.EmployeeTreeInfo();
-            // 员工所属(公司-部门-员工)
-            IList<string> employeeTreeIDList = new List<string>();
-
-            // 变量定义
-            RunTecMs.RunDAL.Organizations.Employee employeeInfo = new RunTecMs.RunDAL.Organizations.Employee();
-            IList<Model.ORG.EmployeeDepartmentRole> employeeDepRoleList = new List<Model.ORG.EmployeeDepartmentRole>();
-            IList<Model.ORG.EmployeeDepartmentRole> employeeDepRoleDetailList = new List<Model.ORG.EmployeeDepartmentRole>();
-            IList<Model.ORG.EmployeeDepartmentRole> employeeRoleList = new List<Model.ORG.EmployeeDepartmentRole>();
-            Model.ORG.EmployeeDepartmentRole departRolePara = new Model.ORG.EmployeeDepartmentRole();
-
-            // 取得公司-部门树形
-            IList<Model.ORG.DepTreeInfo> depTreeList = GetDepTreeByEmployee(EmployeeID);
-
-            // 取得登录用户情报
-            if (maxUserRoleID == 0)
-            {
-                employeeDepRoleList = employeeInfo.GetEmployeeDepartmentID(false, 0, 0, EmployeeID, BusinessValue);
-                if (employeeDepRoleList != null)
-                {
-                    maxUserRoleID = employeeDepRoleList[0].RoleID;
-                }
-                else
-                {
-                    return showEmployeeTree;
-                }
-            }
-
-            // 根据树形去匹配员工信息匹配上的追加到相应节点上
-            // 总经理以上权限，可以查看本公司所有员工权限
-            if ((maxUserRoleID >= Convert.ToInt32(RoleValue.超级管理员) && maxUserRoleID <= Convert.ToInt32(RoleValue.总经理)))
-            {
-                // 根据树形去匹配员工信息匹配上的追加到相应节点上
-                for (int i = 0; i < depTreeList.Count; i++)
-                {
-                    // 公司/部门树形追加
-                    // 20170421 
-                    employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], depTreeList[i].ID, depTreeList[i].PreID, 0, 0, "", "");
-                    if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
-                    {
-                        showEmployeeTree.Add(employeeTreeInfo);
-                        employeeTreeIDList.Add(employeeTreeInfo.ID);
-                    }
-
-                    //公司/部门精准匹配检索
-                    employeeDepRoleDetailList = employeeInfo.GetEmployeeDepartmentID(true, depTreeList[i].CompanyID, depTreeList[i].DepID);
-                    if (employeeDepRoleDetailList == null)
-                    {
-                        continue;
-                    }
-
-                    // 属于当前公司/部门员工设定
-                    for (int j = 0; j < employeeDepRoleDetailList.Count; j++)
-                    {
-                        // 自定义ID
-                        string ID = depTreeList[i].ID + "_" + employeeDepRoleDetailList[j].EmployeeID;
-                        // 自定义亲ID
-                        string PreID = depTreeList[i].ID;
-
-                        // 员工信息
-                        int employeeIDTemp = employeeDepRoleDetailList[j].EmployeeID;
-                        string employeeLoginName = employeeDepRoleDetailList[j].LoginName;
-                        string employeeTrueName = employeeDepRoleDetailList[j].TrueName;
-
-                        employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], ID, PreID, employeeIDTemp, maxUserRoleID, employeeLoginName, employeeTrueName);
-                        if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
-                        {
-                            showEmployeeTree.Add(employeeTreeInfo);
-                            employeeTreeIDList.Add(employeeTreeInfo.ID);
-                        }
-                    }
-                }
+                // 不指定部门场合，查询顶级部门
+                strBSql.AppendLine("AND Department.ParentDepID = 0 ");
             }
             else
             {
-                int userRoleID = 0;
-                string perID = "";
-                
-                // 根据树形去匹配员工信息匹配上的追加到相应节点上
-                for (int i = 0; i < depTreeList.Count; i++)
-                {
-                    bool IsSubDep = false;
-                    bool existFlg = false;
-
-                    // 取得树形中公司和部门
-                    int compantID = depTreeList[i].CompanyID;
-                    int depID = depTreeList[i].DepID;
-
-                    string PreIDTemp = depTreeList[i].PreID;
-                    
-                    // 公司/部门树形追加
-                    employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], depTreeList[i].ID, PreIDTemp, 0, 0, "", "");
-                    if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
-                    {
-                        showEmployeeTree.Add(employeeTreeInfo);
-                        employeeTreeIDList.Add(employeeTreeInfo.ID);
-                    }
-
-                    //公司/部门精准匹配检索
-                    if (BusinessValue == 0)
-                    {
-                        employeeDepRoleDetailList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID);
-                        employeeRoleList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID, EmployeeID);
-                    }
-                    else
-                    {
-                        employeeDepRoleDetailList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID, 0, BusinessValue);
-                        employeeRoleList = employeeInfo.GetEmployeeDepartmentID(true, compantID, depID, EmployeeID, BusinessValue);
-                    }
-
-                    if (employeeRoleList != null)
-                    {
-                        // 取得在部门中的角色
-                        userRoleID = employeeRoleList[0].RoleID;
-                        existFlg = true;
-                    }
-                    else
-                    {
-                        string perDepID = "";
-                        // 取得父级部门ID
-                        if (PreIDTemp.Contains("_"))
-                        {
-                            perDepID = PreIDTemp.Substring(PreIDTemp.IndexOf("_") + 1);
-
-                            employeeRoleList = employeeInfo.GetEmployeeDepartmentID(true, compantID, Convert.ToInt32(perDepID), EmployeeID);
-
-                            if (employeeRoleList != null)
-                            {
-                                // 取得在部门中的角色
-                                userRoleID = employeeRoleList[0].RoleID;
-                                existFlg = true;
-                                IsSubDep = true;
-                            }
-                            else
-                            {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                    // 当父级部门相同时跳转到下一条
-                    if (perID.Equals(depTreeList[i].PreID) && IsSubDep == false)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        // 父级部门不同时，认为是下级部门
-                        if (existFlg == true)
-                        {
-                            perID = depTreeList[i].PreID;
-                        }
-                        existFlg = true;
-                    }
-
-                    if (userRoleID == Convert.ToInt32(RoleValue.经理) && employeeDepRoleDetailList != null)
-                    {
-
-                        // 属于当前公司/部门员工设定
-                        for (int j = 0; j < employeeDepRoleDetailList.Count; j++)
-                        {
-                            // 自定义ID
-                            string ID = depTreeList[i].ID + "_" + employeeDepRoleDetailList[j].EmployeeID;
-                            // 自定义亲ID
-                            string PreID = depTreeList[i].ID;
-
-                            // 员工信息
-                            int employeeIDTemp = employeeDepRoleDetailList[j].EmployeeID;
-                            string employeeLoginName = employeeDepRoleDetailList[j].LoginName;
-                            string employeeTrueName = employeeDepRoleDetailList[j].TrueName;
-
-                            employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], ID, PreID, employeeIDTemp, userRoleID, employeeLoginName, employeeTrueName);
-                            if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
-                            {
-                                showEmployeeTree.Add(employeeTreeInfo);
-                                employeeTreeIDList.Add(employeeTreeInfo.ID);
-                            }
-                            // 20170421 
-                        }
-                    }
-                    else
-                    { 
-                        // 普通员工场合
-                        // 自定义ID
-                        string ID = depTreeList[i].ID + "_" + EmployeeID;
-                        // 自定义亲ID
-                        string PreID = depTreeList[i].ID;
-                        // 根据员工ID取得员工信息
-                        Model.ORG.EmployeeModel employee = employeeInfo.GetEmployeeByEmployeeID(EmployeeID);
-
-                        employeeTreeInfo = GetEmployeeTreeDetailInfo(depTreeList[i], ID, PreID, EmployeeID, userRoleID, employee.LoginName, employee.TrueName);
-                        if (!employeeTreeIDList.Contains(employeeTreeInfo.ID))
-                        {
-                            showEmployeeTree.Add(employeeTreeInfo);
-                            employeeTreeIDList.Add(employeeTreeInfo.ID);
-                        }
-                        // 20170421 
-                    }
-                }
+                // 指定部门场合
+                strBSql.AppendLine("AND Department.DepID = @DepID ");
+                paraList.Add(new SqlParameter("@DepID", depID));
             }
+            // 指定公司
+            if (companyID > 0)
+            {
+                strBSql.AppendLine("AND Company.CompanyID = @CompanyID ");
+                paraList.Add(new SqlParameter("@CompanyID", companyID));
+            }
+            strBSql.AppendLine("ORDER BY CompanyID, DepID ");
 
-            return showEmployeeTree;
+            dt = DbHelperSQL.Query(strBSql.ToString(), paraList.ToArray()).Tables[0];
+
+            if (DataTableTools.DataTableIsNull(dt)) return null;
+
+            IList<Model.ORG.CompanyDepInfo> departmentList = ConvertToList.DataTableToList<Model.ORG.CompanyDepInfo>(dt);
+
+            return departmentList;
         }
 
         /// <summary>
@@ -672,6 +671,7 @@ namespace RunTecMs.RunDAL.Organizations
             return employeeTreeInfo;
         }
         #endregion
+        #endregion
 
         #region 公司信息管理
         /// <summary>
@@ -681,44 +681,57 @@ namespace RunTecMs.RunDAL.Organizations
         /// <returns>公司列表</returns>
         public IList<Model.ORG.Company> GetCompanyInfo(ParaStruct.CompanyStruct para)
         {
-            StringBuilder sb=new StringBuilder();
+            // 查询条件做成
+            StringBuilder sb = new StringBuilder();
             List<SqlParameter> listPara = new List<SqlParameter>();
-            int paraIndex = 0;
-            sb.AppendLine("select CompanyID,CompanyCode,Name,Value,OrderValue,CompanyDescription,CompanyLevel,Remark,CompanyPicName,CompanyURL,IsSYSDBA,RegistrationTime,RegistrationAddr,RegisteredCapital from Org_Company");
-            sb.AppendLine(" WHERE IsDel = 0 ");
+            sb.AppendLine(" AND ISNULL(IsDel,0) = 0 ");
             if (para.CompanyID > 0)
             {
                 sb.AppendLine(" AND CompanyID = @CompanyID ");
-                listPara.Add(new SqlParameter("@CompanyID", SqlDbType.Int));
-                listPara[paraIndex++].Value = para.CompanyID;
+                listPara.Add(new SqlParameter("@CompanyID", para.CompanyID));
             }
             if (para.Name != "" && para.Name != null)
             {
                 sb.AppendLine(" AND Name LIKE @Name ");
-                listPara.Add(new SqlParameter("@Name", SqlDbType.VarChar,50));
-                listPara[paraIndex++].Value ="%" + para.Name + "%";
+                listPara.Add(new SqlParameter("@Name", "%" + para.Name + "%"));
             }
             if (para.Code != "" && para.Code != null)
             {
                 sb.AppendLine(" AND CompanyCode LIKE @Code ");
-                listPara.Add(new SqlParameter("@Code", SqlDbType.VarChar, 10));
-                listPara[paraIndex++].Value = "%" + para.Code + "%";
+                listPara.Add(new SqlParameter("@Code", "%" + para.Code + "%"));
             }
             if (para.StartTime != DateTime.MinValue)
             {
-                sb.AppendLine(" AND RegistrationTime >=@startTime ");
-                listPara.Add(new SqlParameter("@startTime", SqlDbType.DateTime));
-                listPara[paraIndex++].Value = para.StartTime;
+                sb.AppendLine(" AND " + Common.GetTimeConditionByDay("RegistrationTime", "@startTime", ">="));
+                listPara.Add(new SqlParameter("@startTime", para.StartTime));
             }
             if (para.EndTime != DateTime.MaxValue && para.EndTime != DateTime.MinValue)
             {
-                sb.AppendLine(" AND RegistrationTime<=@endTime ");
-                listPara.Add(new SqlParameter("@endTime", SqlDbType.DateTime));
-                listPara[paraIndex++].Value = para.EndTime;
+                sb.AppendLine(" AND " + Common.GetTimeConditionByDay("RegistrationTime", "@endTime", "<="));
+                listPara.Add(new SqlParameter("@endTime", para.EndTime));
             }
-            sb.AppendLine(" ORDER BY CompanyID");
 
-            DataTable dt = DbHelperSQL.Query(sb.ToString(),listPara.ToArray()).Tables[0];
+            GetPageInfo info = new GetPageInfo();
+            // 表名
+            info.tabName = " Org_Company";
+            // 主键
+            info.pkColumn = "CompanyID";
+            // 表示项目
+            info.showColumn = "*";
+            // 排序条件
+            info.ascColumn = "CompanyID asc";
+            // 条件
+            info.where = sb.ToString();
+            // 排序 (0为升序,1为降序)
+            info.intOrderType = 0;
+            // 页码
+            info.pageIndex = para.page;
+            // 页面显示的数据数量
+            info.pageSize = para.rows;
+
+            string strSql = Common.GetPageResult(info);
+
+            DataTable dt = DbHelperSQL.Query(strSql, listPara.ToArray()).Tables[0];
 
             if (DataTableTools.DataTableIsNull(dt)) return null;
 
@@ -848,14 +861,14 @@ namespace RunTecMs.RunDAL.Organizations
         /// </summary>
         /// <param name="companyId">公司ID</param>
         /// <returns>true:成功 false:失败</returns>
-        public bool DeleteCompanyInfo(int companyId)
+        public bool DeleteCompanyInfo(string companyIds)
         {
-            string strSql = "UPDATE Org_Company SET IsDel=1, DelTime = @DelTime WHERE CompanyId=@CompanyId";
+            string strSql = "UPDATE Org_Company SET IsDel=1, DelTime = @DelTime WHERE CompanyId IN  (SELECT *  FROM  dbo.fn_StrToTable(@CompanyId))";
             SqlParameter[] para = {
-                                      new SqlParameter("@CompanyId",SqlDbType.Int),
+                                      new SqlParameter("@CompanyId",SqlDbType.VarChar, 100 ),
                                       new SqlParameter("@DelTime",SqlDbType.DateTime)
                                   };
-            para[0].Value = companyId;
+            para[0].Value = companyIds;
             para[1].Value = DateTime.Now;
             int Result = DbHelperSQL.ExecuteSql(strSql, para);
             return Result > 0; 
@@ -872,7 +885,7 @@ namespace RunTecMs.RunDAL.Organizations
             List<SqlParameter> paralist = new List<SqlParameter>();
 
             string strSql = "SELECT COUNT(0) FROM Org_Company where Name=@name";
-            paralist.Add(new SqlParameter("@name", name));
+            paralist.Add(new SqlParameter("@name", name.Trim()));
             if (comId > 0)
             {
                 strSql = strSql + " and CompanyID <> @comId";
@@ -893,10 +906,6 @@ namespace RunTecMs.RunDAL.Organizations
         {
             List<SqlParameter> paraList = new List<SqlParameter>();
             StringBuilder strbSql = new StringBuilder();
-            strbSql.AppendLine("select t.*, t1.Name as ParentDepName, t2.Name as CompanyName from Org_Department t ");
-            strbSql.AppendLine(" left join Org_Department t1 on t.ParentDepID = t1.DepID ");
-            strbSql.AppendLine(" left join Org_Company t2 on t.CompanyID = t2.CompanyID ");
-            strbSql.AppendLine("WHERE ISNULL(t.IsDel,0)=0 ");
 
             if (departStruct.CompanyID > 0)
             {
@@ -915,9 +924,27 @@ namespace RunTecMs.RunDAL.Organizations
                 strbSql.AppendLine(" AND t.Name LIKE @Name");
                 paraList.Add(new SqlParameter("@Name", "%" + departStruct.Name + "%"));
             }
-            strbSql.AppendLine(" ORDER BY CompanyID, DepID");
+            GetPageInfo info = new GetPageInfo();
+            // 表名
+            info.tabName = " V_DepartmentInfo";
+            // 主键
+            info.pkColumn = "DepID";
+            // 表示项目
+            info.showColumn = "*";
+            // 排序条件
+            info.ascColumn = "CompanyID asc, DepID asc";
+            // 条件
+            info.where = strbSql.ToString();
+            // 排序 (0为升序,1为降序)
+            info.intOrderType = 0;
+            // 页码
+            info.pageIndex = departStruct.page;
+            // 页面显示的数据数量
+            info.pageSize = departStruct.rows;
 
-            DataTable dt = DbHelperSQL.Query(strbSql.ToString(), paraList.ToArray()).Tables[0];
+            string strSql = Common.GetPageResult(info);
+
+            DataTable dt = DbHelperSQL.Query(strSql, paraList.ToArray()).Tables[0];
 
             if (DataTableTools.DataTableIsNull(dt)) return null;
 
@@ -1084,14 +1111,14 @@ namespace RunTecMs.RunDAL.Organizations
         /// </summary>
         /// <param name="companyId">部门ID</param>
         /// <returns>true:成功 false:失败</returns>
-        public bool DeleteDepartment(int depID)
+        public bool DeleteDepartment(string depIDs)
         {
-            string strSql = "UPDATE Org_Department SET IsDel=1, DelTime=@DelTime WHERE DepID=@DepID";
+            string strSql = "UPDATE Org_Department SET IsDel=1, DelTime=@DelTime WHERE DepID IN (SELECT *  FROM  dbo.fn_StrToTable(@DepID))";
             SqlParameter[] para = {
-                                      new SqlParameter("@DepID",SqlDbType.Int),
+                                      new SqlParameter("@DepID",SqlDbType.VarChar, 100),
                                       new SqlParameter("@DelTime",SqlDbType.DateTime)
                                   };
-            para[0].Value = depID;
+            para[0].Value = depIDs;
             para[1].Value = DateTime.Now;
             int Result = DbHelperSQL.ExecuteSql(strSql, para);
             return Result > 0; ;
@@ -1110,16 +1137,9 @@ namespace RunTecMs.RunDAL.Organizations
                                           new SqlParameter("@DepId", SqlDbType.Int)};
             para[0].Value = companyId;
             para[1].Value = depId;
-            dataTable = DbHelperSQL.RunProcedure("sp_GetPerDepartment", para, "Department").Tables[0];
+            dataTable = DbHelperSQL.RunProcedure("sp_BackGetPerDepartment", para, "Department").Tables[0];
             depList = ConvertToList.DataTableToList<Model.ORG.DepInfo>(dataTable);
-            if (depList == null)
-            {
-                return null;
-            }
-            else
-            {
-                return depList;
-            }
+            return depList;
         }
 
         /// <summary>
@@ -1147,150 +1167,6 @@ namespace RunTecMs.RunDAL.Organizations
 
             return departmentList[0].ParentDepID;
         }
-        #endregion
-
-        #region 业务
-
-        /// <summary>
-        /// 获取业务列表
-        /// </summary>
-        /// <param name="pageIndex"></param>
-        /// <param name="pageSize"></param>
-        /// <returns></returns>
-        public IList<Model.ORG.Business> GetBusinessList(int pageIndex, int pageSize, string Name, string Value)
-        {
-            Model.Common.GetPageInfo info = new Model.Common.GetPageInfo();
-
-            List<SqlParameter> listPara = new List<SqlParameter>();
-            StringBuilder sb = new StringBuilder();
-            if (!string.IsNullOrEmpty(Name))
-            {
-                sb.AppendLine("and Name like @Name");
-                listPara.Add(new SqlParameter("@Name", "%" + Name + "%"));
-            }
-            if (!string.IsNullOrEmpty(Value))
-            {
-                sb.AppendLine("and BusinessValue like @Value");
-                listPara.Add(new SqlParameter("@Value", "%" + Value + "%"));
-            }
-            // 表名
-            info.tabName = "CRM_Business";
-            // 主键
-            info.pkColumn = "BusinessID";
-            // 表示项目
-            info.showColumn = "*";
-            // 排序条件
-            info.ascColumn = "BusinessID asc";
-            // 条件
-            info.where = sb.ToString();
-            // 排序 (0为升序,1为降序)
-            info.intOrderType = 0;
-            // 页码
-            info.pageIndex = pageIndex;
-            // 页面显示的数据数量
-            info.pageSize = pageSize;
-
-            string strSql = Common.GetPageResult(info);
-
-            DataTable dt = DbHelperSQL.Query(strSql, listPara.ToArray()).Tables[0];
-            return ConvertToList.DataTableToList<Model.ORG.Business>(dt);
-
-        }
-        /// <summary>
-        /// 获取业务的数据数量
-        /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Value"></param>
-        /// <returns></returns>
-        public int GetBusinessCount(string Name, string Value)
-        {
-            List<SqlParameter> listPara = new List<SqlParameter>();
-            StringBuilder sb = new StringBuilder();
-            if (!string.IsNullOrEmpty(Name))
-            {
-                sb.AppendLine("and Name like @Name");
-                listPara.Add(new SqlParameter("@Name", "%" + Name + "%"));
-            }
-            if (!string.IsNullOrEmpty(Value))
-            {
-                sb.AppendLine("and Value like @Value");
-                listPara.Add(new SqlParameter("@Value", "%" + Value + "%"));
-            }
-            return Common.GetRowsCount("CRM_Business", sb.ToString(), listPara.ToArray());
-        }
-        /// <summary>
-        /// 修改业务
-        /// </summary>
-        /// <param name="UpdateID"></param>
-        /// <param name="Name"></param>
-        /// <param name="Value"></param>
-        /// <returns></returns>
-        public bool EditBusiness(string UpdateID, ParaStruct.Business Business)
-        {
-            List<SqlParameter> listPara = new List<SqlParameter>();
-            StringBuilder sb = new StringBuilder();
-            listPara.Add(new SqlParameter("@BusinessID", Business.BusinessID));
-            listPara.Add(new SqlParameter("@Name", Business.Name));
-            listPara.Add(new SqlParameter("@BusinessValue", Business.BusinessValue));
-            listPara.Add(new SqlParameter("@BusinessName", Business.BusinessName));
-            listPara.Add(new SqlParameter("@OrderValue", Business.OrderValue));
-            listPara.Add(new SqlParameter("@IsSYSDBA",Business.IsSYSDBA));
-      
-
-            //如果UpdateID=true 为插入数据操作
-            if (UpdateID == "true")
-            {
-                sb.AppendLine("INSERT  INTO CRM_Business (BusinessID, Name, BusinessValue, BusinessName, OrderValue, IsSYSDBA)");
-                sb.AppendLine("VALUES (@BusinessID, @Name, @BusinessValue, @BusinessName, @OrderValue, @IsSYSDBA)");
-                int count = DbHelperSQL.ExecuteSql(sb.ToString(), listPara.ToArray());
-                if (count > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-           //否则为更新操作
-            else
-            {
-
-                sb.AppendLine("UPDATE  CRM_Business SET BusinessID=@BusinessID, Name=@Name,BusinessValue=@BusinessValue,");
-                sb.AppendLine(" BusinessName=@BusinessName, OrderValue=@OrderValue, IsSYSDBA=@IsSYSDBA");
-                int count = DbHelperSQL.ExecuteSql(sb.ToString(), listPara.ToArray());
-                if (count > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        //删除业务
-        public bool DeleteBusiness(string deleteID)
-        {
-            return Common.DeleteRecordByPK("CRM_Business", "BusinessID", deleteID);
-        }
-
-        /// <summary>
-        /// 验证是否存在ID
-        /// </summary>
-        /// <returns></returns>
-        public bool IsNoExist(string BusinessID)
-        {
-            StringBuilder strsql = new StringBuilder();
-            strsql.AppendLine(" select count(0) from CRM_Business");
-            strsql.AppendLine(" where BusinessID=@BusinessID");
-            SqlParameter[] para = { new SqlParameter("@BusinessID", SqlDbType.VarChar, 10) };
-            para[0].Value = BusinessID;
-            return DbHelperSQL.Exists(strsql.ToString(), para);
-        }
-
-
         #endregion
 
         #region 职位/job
@@ -1323,84 +1199,6 @@ namespace RunTecMs.RunDAL.Organizations
         }
 
         /// <summary>
-        ///  获取数据范围
-        /// </summary>
-        /// <param name="dataRangeID">数据范围ID(可以为空)</param>
-        /// <returns>数据范围列表</returns>
-        public IList<Model.ORG.DataRang> GetDataRange(int dataRangeID)
-        {
-            string strSql = "SELECT DataRangeID,Name,Value,OrderValue,DataRange,IsSYSDBA FROM Per_DataRange";
-            if (dataRangeID > 0)
-            {
-                strSql = strSql + " WHERE DataRangeID = @DataRangeID";
-                SqlParameter[] para =
-                {
-                     new SqlParameter("@DataRangeID",SqlDbType.Int)
-                };
-                para[0].Value = dataRangeID;
-            }
-            DataTable dt = DbHelperSQL.Query(strSql).Tables[0];
-
-            if (DataTableTools.DataTableIsNull(dt)) return null;
-
-            IList<Model.ORG.DataRang> dataRangList = ConvertToList.DataTableToList<Model.ORG.DataRang>(dt);
-
-            return dataRangList;
-        }
-
-        /// <summary>
-        ///  获取角色
-        /// </summary>
-        /// <param name="roleID">角色ID</param>
-        /// <returns>角色列表</returns>
-        public IList<Model.ORG.Role> GetRole(int roleID, int flag)
-        {
-            string strSql = "SELECT RoleID,DataRangeID,Name,Value,OrderValue,Descrption,IsSYSDBA FROM Per_Role";
-            if (flag == (int)RoleCombobox.精确查询)
-            {
-                strSql = strSql + " WHERE RoleID = @RoleID";
-            }
-            else
-            {
-                if (roleID <= Convert.ToInt32(RoleValue.总经理))
-                {
-                    strSql = strSql + " WHERE RoleID >= @RoleID";
-                }
-                else
-                {
-                    strSql = strSql + " WHERE RoleID >= @RoleID and RoleID <= 8";// 只表示业务相关的
-                }
-            }
-            SqlParameter[] para =
-                {
-                     new SqlParameter("@RoleID",SqlDbType.Int)
-                };
-            para[0].Value = roleID;
-            DataTable dt = DbHelperSQL.Query(strSql, para).Tables[0];
-
-            if (DataTableTools.DataTableIsNull(dt)) return null;
-
-            IList<Model.ORG.Role> roleList = ConvertToList.DataTableToList<Model.ORG.Role>(dt);
-
-            return roleList;
-        }
-
-        /// <summary>
-        /// 获取部门
-        /// </summary>
-        /// <returns></returns>
-        public IList<Model.ORG.Department> GetAllDepartment()
-        {
-            string strSql = "SELECT * FROM Org_Department ";
-            DataTable dt = DbHelperSQL.Query(strSql).Tables[0];
-            if (DataTableTools.DataTableIsNull(dt)) return null;
-
-            IList<Model.ORG.Department> departmentList = ConvertToList.DataTableToList<Model.ORG.Department>(dt);
-
-            return departmentList;
-        }
-
-        /// <summary>
         /// 获取职位列表
         /// </summary>
         /// <param name="pageIndex"></param>
@@ -1423,7 +1221,7 @@ namespace RunTecMs.RunDAL.Organizations
                 listPara.Add(new SqlParameter("@Value", "%" + Value + "%"));
             }
             // 表名
-            info.tabName = " v_Org_Job";
+            info.tabName = " V_JobInfo";
             // 主键
             info.pkColumn = "JobID";
             // 表示项目
@@ -1446,7 +1244,7 @@ namespace RunTecMs.RunDAL.Organizations
 
         }
         /// <summary>
-        /// 获取业务的数据数量
+        /// 获取职位列表数量
         /// </summary>
         /// <param name="Name"></param>
         /// <param name="Value"></param>
@@ -1469,85 +1267,102 @@ namespace RunTecMs.RunDAL.Organizations
         }
 
         /// <summary>
-        /// 获取工作所属
+        /// 职位修改和添加
         /// </summary>
+        /// <param name="job"></param>
         /// <returns></returns>
-        public IList<Model.ORG.JobInfo> GetJobDepartment()
-        {
-            string sql = "select jobid,name  from Org_Job ";
-            DataTable dt = DbHelperSQL.Query(sql).Tables[0];
-            return ConvertToList.DataTableToList<Model.ORG.JobInfo>(dt);
-        }
-
-
-        //修改和添加
-        public bool EditJob(string UpdateID, ParaStruct.JobPage job)
+        public bool EditJob(Model.ORG.JobInfo job)
         {
             List<SqlParameter> listPara = new List<SqlParameter>();
             StringBuilder sb = new StringBuilder();
-            if (!string.IsNullOrEmpty(job.jobName))
-            {
-                listPara.Add(new SqlParameter("@Name", job.jobName));
-            }
-            if (!string.IsNullOrEmpty(job.jobValue))
-            {
-                int value = Convert.ToInt32(job.jobValue);
-                listPara.Add(new SqlParameter("@Value", job.jobValue));
-            }
-            if (string.IsNullOrEmpty(job.department))
-            {
-                job.department = null;
-                listPara.Add(new SqlParameter("@perjobid",job.department));
-            }
-            else
-            {
-                listPara.Add(new SqlParameter("@perjobid", job.department));
-            }
-
+            listPara.Add(new SqlParameter("@Name", job.Name));
+            listPara.Add(new SqlParameter("@Value", job.Value));
+            listPara.Add(new SqlParameter("@perjobid", job.department));
             listPara.Add(new SqlParameter("@IsSYSDBA", job.IsSYSDBA));
 
-            if (UpdateID == "true")
+            int result = 0;
+            if (job.JobID <= 0)
             {
                 sb.AppendLine("insert into Org_Job(JobID, Name, Value, OrderValue,perjobid ,IsSYSDBA) values ((select( select max(JobID) from Org_Job) +1),@Name,@Value,null,@perjobid,@IsSYSDBA)");
-                int count = DbHelperSQL.ExecuteSql(sb.ToString(), listPara.ToArray());
-                if (count > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                result = DbHelperSQL.ExecuteSql(sb.ToString(), listPara.ToArray());
             }
             else
             {
                 sb.AppendLine("UPDATE Org_Job SET Name=@Name,Value=@Value ,perjobid=@perjobid  where  jobid=@jobid");
-                int id = Convert.ToInt32(UpdateID);
-                listPara.Add(new SqlParameter("@jobid", id));
-                int count = DbHelperSQL.ExecuteSql(sb.ToString(), listPara.ToArray());
-                if (count > 0)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                listPara.Add(new SqlParameter("@jobid", job.JobID));
+                result = DbHelperSQL.ExecuteSql(sb.ToString(), listPara.ToArray());
             }
+            return result > 0 ? true : false;
         }
         /// <summary>
         /// 删除职位
         /// </summary>
         /// <param name="deleteID"></param>
         /// <returns></returns>
-        public bool DeleteJob(string deleteID)
+        public bool DeleteJob(string deleteIDs)
         {
-
-            return Common.DeleteRecordByPK("Org_Job", "JobID", deleteID);
-
+            return Common.DeleteRecordByPK("Org_Job", "JobID", deleteIDs);
         }
-
         #endregion
 
+        #region 角色
+        /// <summary>
+        ///  获取角色
+        /// </summary>
+        /// <param name="roleID">角色ID</param>
+        /// <param name="flag">0:精确查询 1:权限内查询</param>
+        /// <returns>角色列表</returns>
+        public IList<Model.ORG.Role> GetRole(int roleID, int flag)
+        {
+            string strSql = "SELECT RoleID,DataRangeID,Name,Value,OrderValue,Descrption,IsSYSDBA FROM Per_Role";
+            if (flag == (int)RoleCombobox.精确查询)
+            {
+                strSql = strSql + " WHERE RoleID = @RoleID";
+            }
+            else
+            {
+                if (roleID <= Convert.ToInt32(RoleValue.总经理))
+                {
+                    strSql = strSql + " WHERE RoleID >= @RoleID";
+                }
+                else
+                {
+                    strSql = strSql + " WHERE RoleID >= @RoleID and RoleID < 8";// 只表示业务相关的
+                }
+            }
+            SqlParameter[] para =
+                {
+                     new SqlParameter("@RoleID",SqlDbType.Int)
+                };
+            para[0].Value = roleID;
+            DataTable dt = DbHelperSQL.Query(strSql, para).Tables[0];
+
+            if (DataTableTools.DataTableIsNull(dt)) return null;
+
+            IList<Model.ORG.Role> roleList = ConvertToList.DataTableToList<Model.ORG.Role>(dt);
+
+            return roleList;
+        }
+        #endregion
+
+        /// <summary>
+        /// 获取自增字段CompanyID的下一个值
+        /// </summary>
+        /// <returns></returns>
+        public int GainIdentity()
+        {
+            string strSql = "select IDENT_CURRENT('Org_Company')+1";
+            return Convert.ToInt32(DbHelperSQL.GetSingle(strSql));
+        }
+
+        /// <summary>
+        /// 获取自增字段DepID的下一个值
+        /// </summary>
+        /// <returns></returns>
+        public int GainDepIdentity()
+        {
+            string strSql = "select IDENT_CURRENT('Org_Department')+1";
+            return Convert.ToInt32(DbHelperSQL.GetSingle(strSql));
+        }
     }
 }

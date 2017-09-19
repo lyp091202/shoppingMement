@@ -18,12 +18,12 @@
     <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
+    <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -44,14 +44,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
-      <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -62,8 +58,12 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Web.Optimization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.0.0\lib\net40\System.Web.Optimization.dll</HintPath>
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.4.0.30506.0\lib\net40\System.Web.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.0\lib\net40\System.Web.Optimization.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
@@ -100,10 +100,6 @@
     <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.4.0.20710.0\lib\net40\System.Web.Http.WebHost.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\packages\Microsoft.AspNet.Mvc.4.0.20710.0\lib\net40\System.Web.Mvc.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.AspNet.Razor.2.0.20710.0\lib\net40\System.Web.Razor.dll</HintPath>
@@ -128,7 +124,8 @@
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\ExceptionAttribute.cs" />
-    <Compile Include="Areas\BaseManager\AccountManagerAreaRegistration.cs" />
+    <Compile Include="Areas\BaseManager\BaseManagerAreaRegistration.cs" />
+    <Compile Include="Areas\BaseManager\Controllers\OrgAjaxController.cs" />
     <Compile Include="Areas\BaseManager\Controllers\OrganizationController.cs" />
     <Compile Include="Common\InputValidate.cs" />
     <Compile Include="Common\Utils.cs" />
@@ -146,6 +143,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Content Include="Areas\BaseManager\Scripts\BaseData\organization.js" />
     <Content Include="Content\common.css" />
     <Content Include="Content\fafa-index.css" />
     <Content Include="Content\home.css" />
@@ -638,7 +636,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\BaseManager\Models\" />
-    <Folder Include="Areas\BaseManager\Scripts\BaseData\" />
     <Folder Include="Areas\BaseManager\Scripts\Goods\" />
     <Folder Include="Areas\BaseManager\Scripts\Logistics\" />
     <Folder Include="Areas\BaseManager\Scripts\Organization\" />
@@ -648,8 +645,8 @@
     <Folder Include="Areas\BaseManager\Views\BaseData\" />
     <Folder Include="Areas\BaseManager\Views\Goods\" />
     <Folder Include="Areas\BaseManager\Views\Logistics\" />
-    <Folder Include="Areas\BaseManager\Views\Organization\" />
     <Folder Include="Areas\BaseManager\Views\Permission\" />
+    <Folder Include="Areas\BaseManager\Views\Shared\" />
     <Folder Include="Areas\BaseManager\Views\Supplier\" />
     <Folder Include="Areas\BaseManager\Views\Warehouse\" />
     <Folder Include="Models\" />
@@ -663,9 +660,11 @@
     <Content Include="log4net.config" />
     <Content Include="Areas\BaseManager\Views\Web.config" />
     <Content Include="Areas\BaseManager\Views\_ViewStart.cshtml" />
-    <Content Include="Areas\BaseManager\Views\Shared\_RevenueDetailPopup.cshtml" />
-    <Content Include="Areas\BaseManager\Views\Shared\_MerchantPopup.cshtml" />
-    <Content Include="Areas\BaseManager\Views\Shared\_LecturePopup.cshtml" />
+    <Content Include="Areas\BaseManager\Views\Organization\AddCompany.cshtml" />
+    <Content Include="Areas\BaseManager\Views\Organization\AddDepartment.cshtml" />
+    <Content Include="Areas\BaseManager\Views\Organization\CompanyList.cshtml" />
+    <Content Include="Areas\BaseManager\Views\Organization\DepartmentList.cshtml" />
+    <Content Include="Areas\BaseManager\Views\Organization\Job.cshtml" />
     <None Include="Scripts\zTree_v3\css\awesomeStyle\awesome.less" />
     <None Include="Scripts\zTree_v3\css\awesomeStyle\fa.less" />
     <Content Include="Views\Shared\_NavList.cshtml" />
@@ -694,8 +693,12 @@
       <Name>RunTecMs.RunBLL</Name>
     </ProjectReference>
     <ProjectReference Include="..\RunTecMs.RunDAL\RunTecMs.RunDAL.csproj">
-      <Project>{E42B717F-DEB7-4F70-A041-C704EFAAB2D2}</Project>
+      <Project>{e42b717f-deb7-4f70-a041-c704efaab2d2}</Project>
       <Name>RunTecMs.RunDAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RunTecMs.RunIDAL\RunTecMs.RunIDAL.csproj">
+      <Project>{cbaaa5f8-16bc-45db-bd62-a096d9a41fb9}</Project>
+      <Name>RunTecMs.RunIDAL</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

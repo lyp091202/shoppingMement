@@ -8,6 +8,7 @@ namespace RunTecMs.RunIDAL.Organizations
 {
     public interface IOrganization
     {
+        #region  组织结构操作
         /// <summary>
         ///  获取公司-部门树形信息
         /// </summary>
@@ -37,7 +38,9 @@ namespace RunTecMs.RunIDAL.Organizations
         /// <param name="EmployeeID"></param>
         /// <returns></returns>
         IList<Model.ORG.EmployeeTreeInfo> GetEmployeeTreeByEmployee(int EmployeeID, int BusinessValue, int maxUserRoleID);
+        #endregion
 
+        #region  公司信息管理
         ///  获取公司信息
         /// </summary>
         /// <param name="companyID">公司ID(可以为空)</param>
@@ -64,7 +67,7 @@ namespace RunTecMs.RunIDAL.Organizations
         /// </summary>
         /// <param name="companyId">公司ID</param>
         /// <returns>true:成功 false:失败</returns>
-        bool DeleteCompanyInfo(int companyId);
+        bool DeleteCompanyInfo(string companyIds);
 
         // <summary>
         /// 验证公司名字
@@ -72,7 +75,9 @@ namespace RunTecMs.RunIDAL.Organizations
         /// <param name="name"></param>
         /// <returns></returns>
         bool SameCompanyName(string name, int comId = 0);
+        #endregion
 
+        #region  部门信息管理
         /// <summary>
         ///  获取部门信息
         /// </summary>
@@ -112,41 +117,8 @@ namespace RunTecMs.RunIDAL.Organizations
         /// </summary>
         /// <param name="companyId">部门ID</param>
         /// <returns>true:成功 false:失败</returns>
-        bool DeleteDepartment(int depID);
-
-        /// <summary>
-        /// 获取部门
-        /// </summary>
-        /// <returns></returns>
-        IList<Model.ORG.Department> GetAllDepartment();
-
-        /// <summary>
-        /// 获取业务列表的个数
-        /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Value"></param>
-        /// <returns></returns>
-        int GetBusinessCount(string Name, string Value);
-        /// <summary>
-        /// 编辑业务
-        /// </summary>
-        /// <param name="UpdateID"></param>
-        /// <param name="Name"></param>
-        /// <param name="Value"></param>
-        /// <returns></returns>
-        bool EditBusiness(string UpdateID, ParaStruct.Business Business);
-        /// <summary>
-        /// 删除业务
-        /// </summary>
-        /// <param name="deleteID"></param>
-        /// <returns></returns>
-        bool DeleteBusiness(string deleteID);
-        /// <summary>
-        /// 是否存在相同ID
-        /// </summary>
-        /// <param name="BusinessID"></param>
-        /// <returns></returns>
-        bool IsNoExist(string BusinessID);
+        bool DeleteDepartment(string depIDs);
+        #endregion
 
         #region 职位
         /// <summary>
@@ -165,18 +137,13 @@ namespace RunTecMs.RunIDAL.Organizations
         /// <param name="Value"></param>
         /// <returns></returns>
         int GetJobCount(string Name, string Value);
-        /// <summary>
-        /// 获取职位部门
-        /// </summary>
-        /// <returns></returns>
-        IList<Model.ORG.JobInfo> GetJobDepartment();
+
         /// <summary>
         /// 修改职位
         /// </summary>
-        /// <param name="UpdateID"></param>
         /// <param name="Job"></param>
         /// <returns></returns>
-        bool EditJob(string UpdateID, ParaStruct.JobPage Job);
+        bool EditJob(Model.ORG.JobInfo job);
         /// <summary>
         /// 删除职位
         /// </summary>
@@ -190,23 +157,27 @@ namespace RunTecMs.RunIDAL.Organizations
         /// <param name="jobID">职位ID(可以为空)</param>
         /// <returns>职位列表</returns>
         IList<Model.ORG.Job> GetJob(int jobID = 0);
+        #endregion
 
-        /// <summary>
-        /// 获取数据范围
-        /// </summary>
-        /// <param name="dataRangeID">数据范围ID(可以为空)</param>
-        /// <returns>数据范围列表</returns>
-        IList<Model.ORG.DataRang> GetDataRange(int dataRangeID = 0);
-
+        #region 角色
         /// <summary>
         ///  获取角色
         /// </summary>
         /// <param name="roleID">角色ID(可以为空)<</param>
         /// <returns>角色列表</returns>
         IList<Model.ORG.Role> GetRole(int roleID, int flag);
-
         #endregion
 
+        /// <summary>
+        /// 获取自增字段DepID的下一个值
+        /// </summary>
+        /// <returns></returns>
+        int GainDepIdentity();
 
+        /// <summary>
+        /// 获取自增字段CompanyID的下一个值
+        /// </summary>
+        /// <returns></returns>
+        int GainIdentity();
     }
 }

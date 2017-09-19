@@ -117,12 +117,12 @@ namespace RunTecMs.RunDAL
             if (colType == 1 || colType == 3)
             {
                 sb.AppendLine(" SET " + column + " = '" + value + "'");
-            } 
+            }
             else if (colType == 2)
             {
                 sb.AppendLine(" SET " + column + " = " + value);
             }
-            
+
             if (!string.IsNullOrEmpty(PK))
             {
                 if (PK.Contains(","))
@@ -310,6 +310,27 @@ namespace RunTecMs.RunDAL
             dt.Columns.Add(columnorderType);
 
             return dt;
+        }
+
+        /// <summary>
+        /// 查询条件中时间精确到日
+        /// </summary>
+        /// <param name="tableCol">查询数据库中的字段</param>
+        /// <param name="conditionCol">查询条件中的项目</param>
+        /// <param name="conditionColType">条件项目的类型（1：string 2：datetime）</param>
+        /// <param name="relation">判断关系</param>
+        public static string GetTimeConditionByDay(string tableCol, string conditionCol, string relation, int conditionColType = 1)
+        {
+            string result = "CONVERT(varchar(100), " + tableCol + ", 23) " + relation;
+            if (conditionColType == 1)
+            {
+                result = "CONVERT(varchar(100), CAST(" + conditionCol + " as datetime), 23)";
+            }
+            else if (conditionColType == 2)
+            {
+                result = "CONVERT(varchar(100), " + conditionCol + ", 23)";
+            }
+            return result;
         }
     }
 }

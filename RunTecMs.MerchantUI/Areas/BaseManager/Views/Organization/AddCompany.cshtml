@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "AddCompany";
+}
+@Scripts.Render("~/Scripts/SiteData.min.js")
+@Styles.Render("~/Scripts/easyui-1.4.5/themes/css")
+@Scripts.Render("~/Scripts/common.js")
+@Scripts.Render("~/Scripts/datagridCommon.js")
+@Scripts.Render("~/Scripts/validatebox.js")
+@Scripts.Render("~/Areas/BaseManager/Scripts/BaseData/organization.js")
+<div class="easyui-panel" id="CompanyPanel" title="添加公司" ">
+    <form id="formCompany" method="post">
+    <table id="InsertTb" class="tablerow">
+        <tr>
+            <td class="td_title">
+                公司名:
+            </td>
+            <td>
+                <input id="Name" name="Name" type="text" class="easyui-textbox" data-options="required:true, validType : 'length[0,20]', invalidMessage : '公司名不能超过20个字',width:300" />
+            </td>
+            <td style="width: 20%" rowspan="3">
+                <input id="companyId" name="CompanyID" type="hidden" />
+                <img id="upLogo" src="/Images/logoyangban.png" width="110" height="110" />
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                公司代码:
+            </td>
+            <td>
+                <input class="easyui-textbox" type="text" name="CompanyCode" data-options="required:true, validType : 'length[0,20]', invalidMessage : '公司代码不能超过20个字',width:300" />
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                公司级别:
+            </td>
+            <td>
+                <select id="Level" name="CompanyLevel" class="easyui-combobox" data-options="width : 300">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                注册时间:
+            </td>
+            <td>
+                <input id="RegistrationTime" name="RegistrationTime" class="easyui-datebox" data-options="required:true,editable : false,width:300" />
+            </td>
+            <td style="width: 20%">
+                <a style="margin-left: 20px" id="uploadPic" href="#" class="easyui-linkbutton" onclick="upCompanylogo();">
+                    上传logo</a>
+                <input type="hidden" name="CompanyPicName" id="hideImagePath" />
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                注册资金:
+            </td>
+            <td>
+                <input class="easyui-numberbox" type="text" name="RegisteredCapital" data-options="width:300,groupSeparator:' '" />（万元）
+            </td>
+        </tr>
+        <tr>
+        </tr>
+        <tr>
+            <td class="td_title">
+                公司摘要:
+            </td>
+            <td>
+                <input id="Remark" class="easyui-textbox" name="Remark" data-options="validType:'length[1,200]',multiline:true,height:'70',width:'300'" />
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                公司描述:
+            </td>
+            <td>
+                <input class="easyui-textbox" name="CompanyDescription" data-options="validType:'length[1,200]', required : true, multiline:true,height:'70',width:'300'" />
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                公司主页:
+            </td>
+            <td>
+             <input type="text" class="easyui-textbox" id="companyUrl" name="CompanyURL" data-options="width : 300"
+                    validtype="url" invalidmessage="url格式不正确[http://www.example.com]" />
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                注册地点:
+            </td>
+            <td>
+                <select id="province"></select>
+                <select id="city"></select>
+                <select id="area"></select>
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title"></td>
+            <td>
+                <input class="easyui-textbox" type="text" id="detAdress" name="detAdress" data-options="width : 530" />
+                <input type="hidden" id="Adress" name="RegistrationAddr" />
+            </td>
+        </tr>
+    </table>
+    </form>
+    <div style="margin-left: 100px; padding: 40px 0 0 40px">
+        <a href="javascript:void(0)" class="easyui-linkbutton buttonCss" id="submit" onclick="submitForm()">
+            提交信息</a> 
+        <a href="javascript:void(0)" class="easyui-linkbutton buttonCss" id="EditInfo" onclick="EditForm()">
+                修改信息</a>
+        <a href="javascript:window.history.back(-1)" class="easyui-linkbutton buttonCss" id="GoBack">
+                返回</a>
+       <a href="javascript:void(0)" class="easyui-linkbutton buttonCss" id="clearInfo" onclick="clearForm()">
+                清 空</a>
+    </div>
+    <!------------上传logo------------>
+    <div id="AddDiv" style="overflow: hidden">
+        <iframe id="AddFrame" frameborder="0" width="100%" height="100%" scrolling="auto">
+        </iframe>
+    </div>
+    <!------------上传logo结束------------>
+
+</div>
+
+@*<div id="updateUrl" style="display:none">
+    <form id="form-updatepwd" style=" margin:20px 15px" >
+          <span class="change-pwdspan">URL：</span>
+             <input type="text" class="easyui-textbox" id="companyNewUrl" name="CompanyURL" data-options=" width : 200, required : true "
+                    validtype="url"  invalidmessage="url格式不正确[http://www.example.com]" />
+    </form>
+</div>*@
