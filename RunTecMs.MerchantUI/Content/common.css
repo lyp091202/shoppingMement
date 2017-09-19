@@ -267,4 +267,43 @@ table .block
     letter-spacing: 3px;
 }
 
+/*****高级搜索隐藏栏*******/
+.option-button {
+    background: #d8e4f3;
+    padding: 4px 0px;
+}
+
+.search-hidde {
+    background: #d8e4f3;
+    border-top: 1px dotted #8db2e3;
+}
+
+.search-table {
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+    .search-table td {
+        line-height: 21px;
+        padding-left: 5px;
+        color: #135294;
+        vertical-align: middle;
+    }
+
+    .search-table .s-title  {
+        float: right;
+        text-align: right;
+        min-width: 60px;
+    }
+
+    .search-table .s-text {
+        position: relative;
+        height: 22px;
+        line-height: 20px;
+        width: 120px;
+    }
+
+.td-margin {
+    padding-bottom: 10px;
+}
 

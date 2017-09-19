@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using RunTecMs.RunDALFactory;
 using RunTecMs.RunIDAL.Organizations;
-//using RunTecMs.RunIDAL.Customer;
 using RunTecMs.Model.Parameter;
 using System.Data.SqlClient;
 
@@ -12,7 +11,7 @@ namespace RunTecMs.RunBLL.Organizations
 {
     public class Employee
     {
-        private static IEmployee dal = DataAccess.CreateEmployee();
+        private IEmployee dal = DataAccess.CreateEmployee();
 
         /// <summary>
         /// 通过登录名获取用户信息

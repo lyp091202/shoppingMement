@@ -28,8 +28,9 @@ $(document).on("click","#userLogin",function() {
     });
 });
 //按下回车键
-$(document).on("keydown",function(e) {
-    if(e.which===13) {
+$(document).on("keydown", function (e) {
+    var eCode = e.keyCode ? e.keyCode : e.which ? e.which : e.charCode;
+    if (eCode == 13) {
         $("#userLogin").trigger("click");
     }
 });

@@ -254,7 +254,7 @@ Messager={
         if(result) {
             $.messager.show({
                 title: '系统消息',
-                msg: "查询"+msg+"页面信息不存在，请修改查询条件后再查询",
+                msg: "查询"+msg+"信息不存在，请修改查询条件后再查询。",
                 showType: 'slide',
                 timeout: 3000,
                 width: 200,
@@ -332,11 +332,6 @@ Messager={
     }
 }
 
-var MoneyType={
-    RMB: 'RMB',
-    Facoin: '发贝'
-}
-
 function show(title,msg) {
     $.messager.show({
         title: title,
@@ -400,3 +395,34 @@ function show(title,msg) {
         }
     });
 })(jQuery);
+
+/**
+ * 高级搜索按钮
+ * @param {string} 隐藏搜索模块的类名
+ * @param {string} 影响的datagrid表的Id名
+ **/
+function searchDatagridList(className, datagridId) {
+    var $class = $('.' + className + '');
+    var $table = $('#' + datagridId + '');
+    var newTableHeight = 0, newTableContentHeight = 0;
+    // 表单高度
+    var nowtableHeight = $table.parent().height();
+
+    // 表单内容高度
+    var tableContentHeight = $table.parent().find('.datagrid-body').height();
+    // 隐藏窗口高度
+    var hideHeight = $class.height();
+    var showFormat = $class.css('display');
+    if (showFormat.trim() == "none") {
+        $class.css('display', 'block');
+        newTableHeight = nowtableHeight - hideHeight;
+        newTableContentHeight = tableContentHeight - hideHeight;
+
+    } else {
+        $class.css('display', 'none');
+        newTableHeight = nowtableHeight + hideHeight;
+        newTableContentHeight = tableContentHeight + hideHeight;
+    }
+    $table.parent().css('height', newTableHeight);
+    $table.parent().find('.datagrid-body').css('height', newTableContentHeight);
+}

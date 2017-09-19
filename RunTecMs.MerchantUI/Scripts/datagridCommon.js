@@ -2,84 +2,6 @@
 var comInfo="", depInfo="",businessInfo="";
 var SelNull="--请选择--";
 $(function () {
-    // dataGrid列动态加载
-    $.extend($.fn.datagrid.methods, {
-        createHeader: function (jq, opts) {
-            function buildHeader(headerContainer, columnsDefine, frozenHeader) {
-                //如果列配置为空，直接返回
-                if (!columnsDefine) {
-                    return;
-                }
-                $(headerContainer).show(); //标题显示
-                $(headerContainer).empty(); //清空原有内容
-                //生成table的dom对象，添加到header所在的层
-                var t = $("<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tbody></tbody></table>").appendTo(headerContainer);
-                //columns设置格式[[...],[...],[...]],第一个子数组生成表格的一行
-                for (var i = 0; i < columnsDefine.length; i++) {
-                    var tr = $("<tr></tr>").appendTo($("tbody", t));
-                    var cols = columnsDefine[i];
-                    for (var j = 0; j < cols.length; j++) {
-                        var col = cols[j]; //列设置col
-                        var attr = "";
-                        if (col.rowspan) {//跨行设置
-                            attr += "rowspan=\"" + col.rowspan + "\" ";
-                        }
-                        if (col.colspan) {//跨列设置
-                            attr += "colspan=\"" + col.colspan + "\" ";
-                        }
-                        var td = $("<td " + attr + "></td>").appendTo(tr); //生成td,设置属性
-                        //是否在第一列添加checkbox
-                        if (col.checkbox) {
-                            td.attr("field", col.field);
-                            $("<div class=\"datagrid-header-check\"></div>").html("<input type=\"checkbox\"/>").appendTo(td);
-                        } else {
-                            //如果设置了field字段
-                            if (col.field) {
-                                td.attr("field", col.field);
-                                td.append("<div class=\"datagrid-cell\"><span></span><span class=\"datagrid-sort-icon\"></span></div>");
-                                $("span", td).html(col.title);
-                                $("span.datagrid-sort-icon", td).html("&nbsp;");
-                                var cell = td.find("div.datagrid-cell");
-                                if (col.resizable == false) {
-                                    cell.attr("resizable", "false");
-                                }
-                                col.boxWidth = $.boxModel ? (col.width - (cell.outerWidth() - cell.width())) : col.width;
-                                cell.width(col.boxWidth);
-                                cell.css("text-align", (col.align || "left"));
-                            } else {
-                                $("<div class=\"datagrid-cell-group\"></div>").html(col.title).appendTo(td);
-                            }
-                        }
-                        //隐藏表格
-                        if (col.hidden) {
-                            td.hide();
-                        }
-                    }
-                }
-                //是否显示行号
-                if (frozenHeader && opts.rownumbers) {
-                    var td = $("<td rowspan=\"" + opts.frozenColumns.length + "\"><div class=\"datagrid-header-rownumber\"></div></td>");
-                    if ($("tr", t).length == 0) {
-                        td.wrap("<tr></tr>").parent().appendTo($("tbody", t));
-                    } else {
-                        td.prependTo($("tr:first", t));
-                    }
-                }
-            };
-            return jq.each(function () {
-                var dc = $.data(this, "datagrid").dc;
-                var headerContainer1 = dc.view1.children("div.datagrid-header");
-                var headerContainer2 = dc.view2.children("div.datagrid-header");
-                var header1 = headerContainer1.children("div.datagrid-header-inner"); //view1的header，行号标题，一般为空
-                var header2 = headerContainer2.children("div.datagrid-header-inner"); //表格的header，显示title
-                buildHeader(header1, opts.frozenColumns, true); //生成冻结表头
-                buildHeader(header2, opts.columns, false); //生成表头
-                header1.css("display", opts.showHeader ? "block" : "none");
-                header2.css("display", opts.showHeader ? "block" : "none");
-            });
-        }
-    });
-
     if($('#GoBack').length>0){
      var parurl=document.referrer;
        if(parurl.indexOf("Home") > 0){
@@ -93,7 +15,7 @@ $(function () {
      if($('#customer-dg').length>0 || $('#affiliationTable').length>0){
          $.ajax({
          type : 'post',
-         url : '/OrganizationManager/OrgAjax/DepartmentCombo/',
+         url: '/BaseManager/OrgAjax/DepartmentCombo/',
          dataType : 'json',
          success : function(data){
          comInfo=data.comList;
@@ -117,7 +39,7 @@ var Common =
             success: function (data) {
                 seektable.datagrid({ queryParams: $(this).serializeObject() });
             }
-        })
+        });
     },
 
     // 上传logo图片
@@ -153,84 +75,82 @@ var Common =
 
     if($('#province').length>0){
          // 获取省份(直辖市)信息
-    function GetProvince() {
-        var provSelector = $("#province");
-        //provSelector.empty();
-        var array=[];
-        var arrProvince = provinceInfo;
-   array.push("[");
-    for (var provinceIndex in arrProvince) {
-        if (provinceIndex==arrProvince.length-1) {
-            array.push("{"+"name:'"+arrProvince[provinceIndex]["name"]+"',value:"+provinceIndex+"}");
-    }
-    else {
-         array.push("{"+"name:'"+arrProvince[provinceIndex]["name"]+"',value:"+provinceIndex+"},");
-    }
-
+        function GetProvince() {
+            var provSelector = $("#province");
+            //provSelector.empty();
+            var array=[];
+            var arrProvince = provinceInfo;
+            array.push("[");
+            for (var provinceIndex in arrProvince) {
+                if (provinceIndex==arrProvince.length-1) {
+                    array.push("{"+"name:'"+arrProvince[provinceIndex]["name"]+"',value:"+provinceIndex+"}");
                 }
-    array.push("]");
-    return array.join("");
-    };
+                else {
+                     array.push("{"+"name:'"+arrProvince[provinceIndex]["name"]+"',value:"+provinceIndex+"},");
+                }
+             }
+            array.push("]");
+            return array.join("");
+        };
 
-    // 获取指定省份(直辖市)的城市(辖区或县)信息
-    function GetCity(provinceName) {
-        var provSelector = $("#province");
-        var citySelector = $("#city");
-        var arrCity=[],arry=[];
-        for (var provinceIndex in provinceInfo) {
-            if (provinceInfo[provinceIndex]["name"] == provinceName) {
-               arry = provinceInfo[provinceIndex]["sub"];
-              break;
+        // 获取指定省份(直辖市)的城市(辖区或县)信息
+        function GetCity(provinceName) {
+            var provSelector = $("#province");
+            var citySelector = $("#city");
+            var arrCity=[],arry=[];
+            for (var provinceIndex in provinceInfo) {
+                if (provinceInfo[provinceIndex]["name"] == provinceName) {
+                   arry = provinceInfo[provinceIndex]["sub"];
+                  break;
+                }
             }
-        }
-        return arry;
-        //citySelector.empty();//移除城市框的内容
-    };
+            return arry;
+        };
 
-    // 获取指定城市(辖区或县)的地区信息
-    function GetArea(provinceName, cityName) {
-        var areaSelector = $("#area");
-        var arrCity, arrArea;
-        for (var provinceIndex in provinceInfo) {
-            if (provinceInfo[provinceIndex]["name"] == provinceName) {
-                arrCity = provinceInfo[provinceIndex]["sub"];
-                for (var cityIndex in arrCity) {
-                    if (arrCity[cityIndex]["name"] == cityName) {
-                        arrArea = arrCity[cityIndex]["sub"];
-                        break;
+        // 获取指定城市(辖区或县)的地区信息
+        function GetArea(provinceName, cityName) {
+            var areaSelector = $("#area");
+            var arrCity, arrArea;
+            for (var provinceIndex in provinceInfo) {
+                if (provinceInfo[provinceIndex]["name"] == provinceName) {
+                    arrCity = provinceInfo[provinceIndex]["sub"];
+                    for (var cityIndex in arrCity) {
+                        if (arrCity[cityIndex]["name"] == cityName) {
+                            arrArea = arrCity[cityIndex]["sub"];
+                            break;
+                        }
                     }
                 }
             }
-        }
-        return arrArea;
-    };
+            return arrArea;
+        };
 
-     /**
-    * 地址选择框
-    */
-   //地址
-    $('#province').combobox({
-          width:170,
-          textField:'name',
-          valueField:'value',
-          panelHeight : 'auto',
-          data:eval("("+GetProvince()+")"),
-          value: SelNull,
-          editable:false,
-          onSelect: function(record){
-          $('#area').combobox({
-              value:'',
-          });
-          var city=GetCity(record.name);
-          $('#city').combobox({
-                 valueField:'name',
-                 textField:'name',
-                 panelHeight : 'auto',
-                 data:city,
-                 value:SelNull,
+        /**
+        * 地址选择框
+        */
+       //地址
+        $('#province').combobox({
+              width:170,
+              textField:'name',
+              valueField:'value',
+              panelHeight : 'auto',
+              data:eval("("+GetProvince()+")"),
+              value: SelNull,
+              editable:false,
+              onSelect: function(record){
+              $('#area').combobox({
+                  value:'',
               });
-           }
-     });
+              var city=GetCity(record.name);
+              $('#city').combobox({
+                     valueField:'name',
+                     textField:'name',
+                     panelHeight : 'auto',
+                     data:city,
+                     value:SelNull,
+                  });
+               }
+         });
 
       $('#city').combobox({
             width:170,
@@ -286,7 +206,7 @@ var Common =
              }
              var Adress=$('#province').combobox('getText') + city + area + det;
              adress.val(Adress);
-            }
+        }
     },
 
     // 分解地址内容
@@ -314,77 +234,12 @@ var Common =
         }
     },
 
-    // 公司、部门下拉列表(添加部门时使用，需判断级别)
-    Compy_DepCombo: function(){
-   //选择部门所属
-   var csign=0;
-    $('#subCompany').combobox({
-         width : 175,
-         url: '/OrganizationManager/OrgAjax/CompanyCombo/',
-         valueField : 'CompanyID',
-         textField : 'Name',
-         panelHeight : 'auto',
-         editable : false,
-         onLoadSuccess :function(){
-             if(csign==0){
-                 var data = $('#subCompany').combobox('getData');
-                   data.unshift(0,{'CompanyID':0,'Name': SelNull});
-                   csign++;
-                   $(this).combobox('loadData',data);
-                }
-//                 $(this).combobox('setValue', 0)
-             },
-         onSelect : function(record){
-           $('#subDeparty').combotree({
-                url: '/OrganizationManager/OrgAjax/DepartCombo?id='+record.CompanyID,
-                value:SelNull,
-                loadFilter: function (rows) {
-                for(var i=0;i<rows.length;i++){
-                    if(rows[i].PreID==""){
-                        rows[i].DepName=rows[i].CompanyName;
-                     }
-                }
-                var filter = utils.filterProperties(rows, ['ID as id', 'DepName as text', 'PreID as pid']);
-                var data = utils.toTreeData(filter, 'id', 'pid', "children");
-                return data;
-            },
-            onClick: function(node){
-              if(node.id.lastIndexOf("_")<0){
-                $('#subDeparty').combotree('clear');
-             }
-            },
-            onSelect : function(item){
-                    var parent = item;
-                    var tree = $('#subDeparty').combotree('tree');
-                    var path = new Array();
-                    do {  
-                        path.unshift(parent.text);
-                        var parent = tree.tree('getParent', parent.target);
-                        } while (parent);
-              $('#deplevel').val(path.length);
-//                    var pathStr = '';
-//                    for (var i = 0; i < path.length; i++) {
-//                        pathStr += path[i];  
-//                        if (i < path.length - 1) {
-//                            pathStr += ' - ';
-//                        }
-//                    }
-//                var parentTree=pathStr;
-            }
-           })
-         }
-    });
-    $('#subDeparty').combotree({
-        width : 175,
-     });
-    },
-
       //角色的下拉列表
     Role_JobCombo :function(){
       var rolesign=0, jobsign=0;
         $('#subRole').combobox({
              width : 175,
-             url: '/OrganizationManager/OrgAjax/RoleCombo/',
+             url: '/BaseManager/OrgAjax/RoleCombo/',
              valueField : 'RoleID',
              panelHeight : 'auto',
              textField : 'Name',
@@ -402,7 +257,7 @@ var Common =
         $('#subJob').combobox({
              width : 175,
              panelHeight : 'auto',
-             url: '/OrganizationManager/OrgAjax/JobCombo/',
+             url: '/BaseManager/OrgAjax/JobCombo/',
              valueField : 'JobID',
              textField : 'Name',
              onLoadSuccess :function(){
@@ -422,7 +277,7 @@ var Common =
         $business.combobox({
              width : 175,
              panelHeight : 'auto',
-             url: '/OrganizationManager/OrgAjax/BusinessCombo/',
+             url: '/BaseManager/OrgAjax/BusinessCombo/',
              valueField : 'BusinessID',
              textField : 'Name',
              editable : false,
@@ -438,14 +293,13 @@ var Common =
         });
     },
 
-
     // 添加员工时公司、部门下拉列表
     AddEmpCompy_DepCombo: function(){
     var comsign=0;
    //选择部门所属
     $('#subCompany').combobox({
          width : 175,
-         url: '/OrganizationManager/OrgAjax/CompanyCombo/',
+         url: '/BaseManager/OrgAjax/CompanyCombo/',
          valueField : 'CompanyID',
          textField : 'Name',
          panelHeight : 'auto',
@@ -461,13 +315,8 @@ var Common =
              },
          onSelect : function(record){
            $('#subDeparty').combotree({
-                url: '/OrganizationManager/OrgAjax/DepartCombo?id='+record.CompanyID,
+               url: '/BaseManager/OrgAjax/DepartCombo?id=' + record.CompanyID,
                 loadFilter: function (rows) {
-//                for(var i=0;i<rows.length;i++){
-//                    if(rows[i].PreID==""){
-//                        rows[i].DepName=rows[i].CompanyName;
-//                    }
-//                }
                 for(var i=0;i<rows.length;i++){
                     if(rows[i].PreID==""){
                         rows[i].DepName=rows[i].CompanyName;
@@ -484,9 +333,6 @@ var Common =
              }
             }
            });
-//           $('#subRole').combotree({
-//                width : 175,
-//           })
          }
     });
     $('#subDeparty').combotree({
@@ -513,7 +359,7 @@ var Common =
      if(DepId !="" && DepId !=null){
            var parId=CompId +"_"+DepId;
            $('#subDeparty').combotree({
-                url: '/OrganizationManager/OrgAjax/DepartCombo?id='+CompId,
+               url: '/BaseManager/OrgAjax/DepartCombo?id=' + CompId,
                 loadFilter: function (rows) {
                 var filter = utils.filterProperties(rows, ['ID as id', 'DepName as text', 'PreID as pid']);
                 var data = utils.toTreeData(filter, 'id', 'pid', "children");
@@ -534,10 +380,10 @@ var Common =
         }
   },
 
-  //// 员工combotree
+  // 员工combotree
   EmployeeCombotree:function ($emptree){
     $emptree.combotree({
-        url: '/OrganizationManager/OrgAjax/CompDepartEmpTree/',
+        url: '/BaseManager/OrgAjax/CompDepartEmpTree/',
         value :SelNull,
         loadFilter: function (rows) {
             var treeData = [];
@@ -614,9 +460,9 @@ var Common =
     //获取 公司-部门-员工 树形结构
     ComDelEmpTree:function($tree,$table){
          $tree.tree({
-        url: '/OrganizationManager/OrgAjax/CompDepartEmpTree/',
-         onLoadSuccess : function(node, data) {
-            $tree.tree('collapseAll');
+             url: '/BaseManager/OrgAjax/CompDepartEmpTree/',
+             onLoadSuccess : function(node, data) {
+                $tree.tree('collapseAll');
            },
         loadFilter: function (rows) {
             var treeData = [];
@@ -676,6 +522,61 @@ var Common =
        $combo.combobox('clear');
      }
     },
+    // 公司、部门下拉列表(添加部门时使用，需判断级别)
+    Compy_DepCombo: function () {
+        //选择部门所属
+        var csign = 0;
+        $('#subCompany').combobox({
+            width: 175,
+            url: '/BaseManager/OrgAjax/CompanyCombo',
+            valueField: 'CompanyID',
+            textField: 'Name',
+            panelHeight: 150,
+            editable: false,
+            onLoadSuccess: function () {
+                if (csign == 0) {
+                    var data = $('#subCompany').combobox('getData');
+                    data.unshift(0, { 'CompanyID': 0, 'Name': SelNull });
+                    csign++;
+                    $(this).combobox('loadData', data);
+                }
+            },
+            onSelect: function (record) {
+                $('#subDeparty').combotree({
+                    url: '/BaseManager/OrgAjax/DepartCombo?id=' + record.CompanyID,
+                    value: SelNull,
+                    loadFilter: function (rows) {
+                        for (var i = 0; i < rows.length; i++) {
+                            if (rows[i].PreID == "") {
+                                rows[i].DepName = rows[i].CompanyName;
+                            }
+                        }
+                        var filter = utils.filterProperties(rows, ['ID as id', 'DepName as text', 'PreID as pid']);
+                        var data = utils.toTreeData(filter, 'id', 'pid', "children");
+                        return data;
+                    },
+                    onClick: function (node) {
+                        if (node.id.lastIndexOf("_") < 0) {
+                            $('#subDeparty').combotree('clear');
+                        }
+                    },
+                    onSelect: function (item) {
+                        var parent = item;
+                        var tree = $('#subDeparty').combotree('tree');
+                        var path = new Array();
+                        do {
+                            path.unshift(parent.text);
+                            var parent = tree.tree('getParent', parent.target);
+                        } while (parent);
+                        $('#deplevel').val(path.length);
+                    }
+                })
+            }
+        });
+        $('#subDeparty').combotree({
+            width: 175,
+        });
+    },
    //公共提示框
     messager: function (result,msg) { //如果保存成功后的返回操作
         //result为请求处理后的返回值
@@ -720,6 +621,10 @@ function Depformatter(val){
 function createCol(arr) {
 
     var columns = new Array();
+    if (arr == null)
+    {
+        return;
+    }
    
     $.each(arr, function (i, item) {
         if (item.sortable == "1") {

@@ -27,7 +27,7 @@ namespace RunTecMs.RunDAL.Organizations
         {
             StringBuilder sb = new StringBuilder();
             List<SqlParameter> paraList = new List<SqlParameter>();
-            sb.AppendLine("SELECT TOP 1 VEB.*,"); 
+            sb.AppendLine("SELECT TOP 1 VEB.*,VEB.RoleID AS MaxRoleID"); 
             sb.AppendLine("  FROM V_EmployeeBelongInfo VEB  ");
             sb.AppendLine(" WHERE VEB.LoginName = @LoginName ");
             paraList.Add(new SqlParameter("@LoginName", loginName));
@@ -60,7 +60,7 @@ namespace RunTecMs.RunDAL.Organizations
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("select * from V_EmployeeBelongInfo");
-            sb.AppendLine("where EmployeeID=@EmployeeID");
+            sb.AppendLine("where EmployeeID = @EmployeeID");
 
             SqlParameter[] para = new SqlParameter[]{
              new SqlParameter("@EmployeeID",SqlDbType.Int)

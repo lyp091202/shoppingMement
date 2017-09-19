@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using RunTecMs.RunIDAL.Organizations;
 using RunTecMs.RunDALFactory;
 using RunTecMs.Model.Parameter;
@@ -12,7 +9,8 @@ namespace RunTecMs.RunBLL.Organizations
     {
         private readonly IOrganization dal = DataAccess.CreateOrganization();
 
-         /// <summary>
+        #region  组织结构操作
+        /// <summary>
         ///  获取公司-部门树形信息
         /// </summary>
         /// <param name="companyID">公司ID（可以为空）</param>
@@ -53,7 +51,9 @@ namespace RunTecMs.RunBLL.Organizations
         {
             return dal.GetEmployeeTreeByEmployee(EmployeeID, BusinessValue, maxUserRoleID);
         }
+        #endregion
 
+        #region  公司信息管理
         /// <summary>
         ///  获取公司信息
         /// </summary>
@@ -89,7 +89,7 @@ namespace RunTecMs.RunBLL.Organizations
         /// </summary>
         /// <param name="companyId">公司ID</param>
         /// <returns>true:成功 false:失败</returns>
-        public bool DeleteCompanyInfo(int companyId)
+        public bool DeleteCompanyInfo(string companyId)
         {
             return dal.DeleteCompanyInfo(companyId);
         }
@@ -104,7 +104,9 @@ namespace RunTecMs.RunBLL.Organizations
         {
             return dal.UpdateCompanyInfo(companyId,company);
         }
+        #endregion
 
+        #region  部门信息管理
         /// <summary>
         ///  获取部门信息
         /// </summary>
@@ -145,7 +147,7 @@ namespace RunTecMs.RunBLL.Organizations
         /// </summary>
         /// <param name="companyId">部门ID</param>
         /// <returns>true:成功 false:失败</returns>
-        public bool DeleteDepartment(int depID)
+        public bool DeleteDepartment(string depID)
         {
             return dal.DeleteDepartment(depID);
         }
@@ -160,78 +162,13 @@ namespace RunTecMs.RunBLL.Organizations
         {
             return dal.UpdateDepartmentInfo(departmentId, department);
         }
+        #endregion
 
-        /// <summary>
-        /// 获取部门
-        /// </summary>
-        /// <returns></returns>
-        public IList<Model.ORG.Department> GetAllDepartment()
-        {
-            return dal.GetAllDepartment();
-        }
-
-        /// <summary>
-        ///获取业务个数
-        /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Value"></param>
-        /// <returns></returns>
-        public int GetBusinessCount(string Name, string Value)
-        {
-            return dal.GetBusinessCount(Name, Value);
-        
-        }
-        /// <summary>
-        /// 编辑业务
-        /// </summary>
-        /// <param name="UpdateID"></param>
-        /// <param name="Business"></param>
-        /// <returns></returns>
-        public bool EditBusiness(string UpdateID, ParaStruct.Business Business)
-        {
-            return dal.EditBusiness(UpdateID, Business);
-        }
-
-        /// <summary>
-        /// 删除业务
-        /// </summary>
-        /// <param name="deleteID"></param>
-        /// <returns></returns>
-        public bool DeleteBusiness(string deleteID)
-        {
-            return dal.DeleteBusiness(deleteID);
-        }
-        /// <summary>
-        /// 是否存在ID
-        /// </summary>
-        /// <param name="BusinessID"></param>
-        /// <returns></returns>
-        public bool IsNoExist(string BusinessID)
-        {
-            return dal.IsNoExist(BusinessID);
-        }
-
-        #region  job
-
+        #region  职位管理
         //获取所有职位
         public IList<Model.ORG.Job> GetAllJob()
         {
             return dal.GetJob();
-        }
-        //获取所有数据范围
-        public IList<Model.ORG.DataRang> GetAllDataRange()
-        {
-            return dal.GetDataRange();
-        }
-
-        /// <summary>
-        ///  获取角色
-        /// </summary>
-        /// <param name="roleID">角色ID</param>
-        /// <returns>角色列表</returns>
-        public IList<Model.ORG.Role> GetRole(int roleID, int flag)
-        {
-            return dal.GetRole(roleID, flag);
         }
 
         /// <summary>
@@ -259,25 +196,13 @@ namespace RunTecMs.RunBLL.Organizations
         }
 
         /// <summary>
-        /// 获取部门
-        /// </summary>
-        /// <returns></returns>
-        public IList<Model.ORG.JobInfo> GetJobDepartment()
-        {
-            return dal.GetJobDepartment();
-        }
-
-        /// <summary>
         /// 编辑职位
         /// </summary>
-        /// <param name="UpdateID"></param>
-        /// <param name="Name"></param>
-        /// <param name="Value"></param>
-        /// <param name="perjobid"></param>
+        /// <param name="job"></param>
         /// <returns></returns>
-        public bool EditJob(string UpdateID,ParaStruct.JobPage job)
+        public bool EditJob(Model.ORG.JobInfo job)
         {
-            return dal.EditJob(UpdateID,job);
+            return dal.EditJob(job);
         }
 
         /// <summary>
@@ -291,7 +216,36 @@ namespace RunTecMs.RunBLL.Organizations
         }
         #endregion
 
+        #region  角色管理
+        /// <summary>
+        ///  获取角色
+        /// </summary>
+        /// <param name="roleID">角色ID</param>
+        /// <returns>角色列表</returns>
+        public IList<Model.ORG.Role> GetRole(int roleID, int flag)
+        {
+            return dal.GetRole(roleID, flag);
+        }
+        #endregion
 
+
+        /// <summary>
+        /// 获取自增字段CompanyID的下一个值
+        /// </summary>
+        /// <returns></returns>
+        public int GainIdentity()
+        {
+            return dal.GainIdentity();
+        }
+
+        /// <summary>
+        /// 获取自增字段DepID的下一个值
+        /// </summary>
+        /// <returns></returns>
+        public int GainDepIdentity()
+        {
+            return dal.GainDepIdentity();
+        }
 
     }
 }

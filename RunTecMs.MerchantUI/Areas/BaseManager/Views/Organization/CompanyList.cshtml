@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "CompanyList";
+}
+@Styles.Render("~/Scripts/easyui-1.4.5/themes/css")
+@Scripts.Render("~/Scripts/common.js")
+@Scripts.Render("~/Scripts/datagridCommon.js")
+@Scripts.Render("~/Scripts/jquery.cookie.js")
+@Scripts.Render("~/Areas/BaseManager/Scripts/BaseData/organization.js")
+<div id="CompanySearch" class="easyui-panel" data-options="fit:true" title="">
+    <div id="toolbar">
+        <div class="option-button">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="AddCompany()">
+                添加
+            </a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true" onclick="EditCompany()">
+                编辑
+            </a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="DeleteCompany()">
+                删除
+            </a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls: 'icon-search',plain:true" onclick="searchDatagridList('search-hidde', 'CompanyInfoList')">
+                高级搜索
+            </a>
+        </div>
+        <div class="search-hidde" style="display: none">
+            <form method="post" action="" class="tableProperties" id="companyform">
+                <table class="search-table">
+                    <tr>
+                        <td class="s-title">
+                            公司名：
+                        </td>
+                        <td class="s-text">
+                            <input id="txtName" name="txtName" class="easyui-textbox" data-options="validType : 'length[0,20]', invalidMessage : '名字不能超过20个字'" />
+                        </td>
+                        <td class="s-title">
+                            公司代码：
+                        </td>
+                        <td class="s-text">
+                            <input id="txtCode" name="txtCode" class="easyui-textbox" data-options="validType : 'length[0,20]', invalidMessage : '代码不能超过20个字'" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="s-title">
+                            注册时间：
+                        </td>
+                        <td class="s-text">
+                            <input id="starttime" name="startTime" class="easyui-datebox" data-options="editable : false" />
+                        </td>
+                        <td>
+                            至
+                        </td>
+                        <td class="s-text">
+                            <input id="endtime" name="endTime" class="easyui-datebox" data-options="editable : false, validType : 'equalDate[\'#starttime\']'" />
+                        </td>
+                        <td class="td_search">
+                            <a href="javascript:void(0)" onclick="CompanySeek()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">
+                                查询
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    
+    <div class="easyui-layout"  data-options="fit:true" >
+        <div region="center" border="false" id="result" style="padding-bottom:0px "  data-options="fit:true" >
+            <table id="CompanyInfoList" title="公司列表" data-options="fit:true" >
+            </table>
+        </div>
+    </div>
+    
+</div>

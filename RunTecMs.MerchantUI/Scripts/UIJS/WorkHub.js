@@ -1,11 +1,4 @@
-﻿var grid;
-
-$(function () {
-    getMessageGridList();
-});
-
-function getMessageGridList() {
-    debugger;
+﻿$(function () {
     var $datagrid = {};
     var columns = new Array();
     $datagrid.title = "";
@@ -16,7 +9,7 @@ function getMessageGridList() {
     $.ajax({
         type: 'post',
         datatype: 'json',
-        url: '/Home/GetMessageGridList?UsePage=' + "工作台" + '&UseGrid=' + "MessageGridList",
+        url: '/Home/GetMessageGridList?UsePage=' + "BM0000" + '&UseGrid=' + "MessageGridList",
         success: function (returnValue) {
             $datagrid.columns = new Array(createCol(returnValue.columns));
             $('#MessageGridList').datagrid($datagrid);
@@ -24,7 +17,7 @@ function getMessageGridList() {
 
             $('#MessageGridList').datagrid('loadData', returnValue);
         }
-
     });
-}
+});
+
 

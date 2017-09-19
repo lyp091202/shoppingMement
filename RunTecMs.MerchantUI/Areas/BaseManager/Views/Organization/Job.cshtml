@@ -1,0 +1,59 @@
+﻿@{
+    ViewBag.Title = "Job";
+}
+
+@Scripts.Render("~/Areas/OrganizationManager/Scripts/Business.js")
+
+<script type="text/javascript">
+    $(function () {
+
+        $("#isadd").click(function () {
+            var isadd = '1';
+            editDiaolog(isadd);
+        });
+
+        $("#isedit").click(function () {
+
+            var isadd = '2';
+            editDiaolog(isadd);
+        });
+    
+    })
+
+
+</script>
+<div id="JobSearch" class="easyui-panel" title="查询"  data-options="fit:true" >
+    <form method="post" class="tableProperties" action="" id="JobForm">
+    <table class="row">
+    <tr>
+    <td class="td_title">职位名：</td><td class="td_text"> <input id="Name" name="Name" class="easyui-textbox" data-options="validType : 'length[0,20]', invalidMessage : '名字不能超过20个字'" /></td>
+    <td class="td_title">职位值：</td><td class="td_text"> <input id="Value" name="Value" class="easyui-textbox" data-options="validType : 'length[0,20]', invalidMessage : '名字不能超过20个字'" /></td>
+    <td class="td_search"><a href="javascript:void(0)" id="search" onclick="JobForm()" class="easyui-linkbutton"  data-options="iconCls:'icon-search'">查询</a></td>    
+    </tr>
+    </table>
+     <input type="hidden" id="LoginRole" name="LoginRole"  value= @ViewBag.Role />
+    </form>
+
+        <div id="toolbar">
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls: 'icon-add',plain:true" id="isadd">添加</a> 
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls: 'icon-edit',plain:true"  id="isedit">编辑</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls: 'icon-remove',plain:true"  onclick="DeleteJob()">删除</a>
+    </div>
+    <div class="easyui-layout" fit="true">
+     <div region="center" border="true" id="result" style="padding-bottom:65px" data-options="fit:true">
+    <table id="JobGrid" title="职位列表"  data-options="fit:true" >
+    </table>
+    </div>
+    </div>
+
+    <div id="JobDialog" closed="true">
+     <form method="post"  action="" id="JobDialogForm">
+    <table  style="margin-left:10px; margin-top:10px">
+    <tr><td>职位名：</td><td><input id="jobName" name="jobName" class="easyui-textbox" data-options="required:true,validType : 'length[0,20]', invalidMessage : '名字不能超过20个字'" /></td></tr>
+        <tr><td>职位值：</td><td><input id="jobValue" name="jobValue" class="easyui-numberbox" data-options="required:true,validType : 'length[0,20]', invalidMessage : '名字不能超过20个字'" /></td></tr>
+        <tr><td>所属：</td><td> <select id="department" name="department"></select></td></tr>
+    </table>
+    </form>
+    </div>
+
+        </div>

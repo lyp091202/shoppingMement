@@ -1,0 +1,74 @@
+﻿@{
+    ViewBag.Title = "DepartmentList";
+}
+@Scripts.Render("~/Areas/OrganizationManager/Scripts/organization.js")
+<div class="easyui-panel" id="departPanel" data-options="fit:true"  title="查询">
+    <form method="post" action="" id="departForm">
+    <table class="row">
+        <tr>
+            <td class="td_title">
+                公司名：
+            </td>
+            <td class="td_text">
+                <select id="subCompany" name="subCompany">
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="td_title">
+                部门名：
+            </td>
+            <td class="td_text">
+                <input id="txtName" name="txtName" class="easyui-textbox" data-options="validType : 'length[0,20]', invalidMessage : '名字不能超过20个字'" />
+            </td>
+            <td class="td_title">
+                部门代码：
+            </td>
+            <td class="td_text">
+                <input id="txtCode" name="txtCode" class="easyui-textbox" data-options="validType : 'length[0,20]', invalidMessage : '代码不能超过20个字'" />
+            </td>
+            <td class="td_search">
+                <a href="javascript:void(0)" onclick="DepartSeek()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">
+                    查询</a>
+            </td>
+        </tr>
+    </table>
+    </form>
+    <div class="easyui-layout" fit="true">
+         <div region="center" border="true" id="result" style=" padding-bottom:93px " data-options="fit:true">
+        <table id="DepartmentTable" title="部门列表" class="easyui-datagrid" data-options="fit:true" >
+            <thead>
+                <tr>
+                    <th data-options="field : 'CompanyName',  halign : 'center', width : 150">
+                        所属公司
+                    </th>
+                    <th data-options="field : 'Name', halign : 'center', width : 120 ">
+                        部门名称
+                    </th>
+                    <th data-options="field : 'DepCode',halign : 'center', width : 80">
+                        部门代码
+                    </th>
+                    <th data-options="field : 'ParentDepName',  halign : 'center', width : 80">
+                        所属部门
+                    </th>
+                    <th data-options="field : 'DepLevel',  halign : 'center',align : 'right', sortable : true, width : 50">
+                        级别
+                    </th>
+                    <th data-options="field : 'DepDescription', halign : 'center', width : 120">
+                        描述
+                    </th>
+                    <th data-options="field : 'Remark',  halign : 'center', width : 120">
+                        摘要
+                    </th>
+                </tr>
+            </thead>
+        </table>
+        </div>
+    </div>
+    <div id="toolbar">
+        <a href="@Url.Action("AddDepartment", "Organization")" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">
+            添加</a> <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true"
+                onclick="EditDepartment()">编辑</a> <a href="javascript:void(0)" class="easyui-linkbutton"
+                    data-options="iconCls:'icon-remove',plain:true" onclick="DeleteDepartment()">删除</a>
+    </div>
+</div>
